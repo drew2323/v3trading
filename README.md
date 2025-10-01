@@ -166,19 +166,63 @@ VITE_API_BASE_URL=/api
 
 For detailed documentation including architecture decisions, API examples, and troubleshooting, see [CLAUDE.MD](./CLAUDE.MD).
 
-## 🔨 Building for Production
+## 🚢 Deployment
 
-### Frontend
+### Docker Deployment
+
+The project includes Docker support with multi-stage builds and GitHub Actions CI/CD.
+
+#### Local Docker Build
+```bash
+# Build and run with docker-compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+#### GitHub Actions CI/CD
+
+Automated deployment to VPS on push to `main` branch.
+
+**Required GitHub Secrets:**
+- `VPS_HOST` - Your VPS IP or hostname
+- `VPS_USERNAME` - SSH username for VPS
+- `VPS_SSH_KEY` - Private SSH key for authentication
+- `GOOGLE_CLIENT_ID` - Production Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET` - Production Google OAuth Client Secret
+- `JWT_SECRET_KEY` - Production JWT secret (min 32 chars)
+- `FRONTEND_URL` - Production frontend URL (e.g., https://yourdomain.com)
+
+**Deployment Process:**
+1. Push to `main` branch
+2. GitHub Actions builds Docker images
+3. Deploys to VPS via SSH
+4. Creates `.env` file from secrets
+5. Runs `docker-compose up -d`
+
+#### VPS Requirements
+- Docker and docker-compose installed
+- SSH access configured with key authentication
+- Ports 80/443 open
+- Domain configured (optional, for SSL)
+
+### Manual Production Build
+
+#### Frontend
 ```bash
 cd frontend
 npm run build
 ```
 
-### Backend
+#### Backend
 Update environment variables for production:
 - Set `secure=True` for cookies (requires HTTPS)
 - Update `FRONTEND_URL` to production domain
-- Update CORS origins in `main.py`
+- Set `CORS_ORIGINS` to production domain(s)
 - Generate a secure `JWT_SECRET_KEY`
 
 ## 🤝 Contributing

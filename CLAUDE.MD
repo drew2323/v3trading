@@ -377,7 +377,153 @@ npm run dev
 - `frontend/dist/` - Build output
 - `.DS_Store` - macOS files
 
+## Deployment & DevOps
+
+### Docker Configuration
+
+#### Backend Dockerfile
+- Multi-stage build for optimized image size
+- Stage 1: Install dependencies with build tools
+- Stage 2: Production runtime with minimal dependencies
+- Non-root user for security
+- Health check endpoint: `/health`
+- Runs on port 8000 with uvicorn
+
+#### Frontend Dockerfile
+- Multi-stage build: Node.js build + Nginx serve
+- Stage 1: Build Vue app with Vite
+- Stage 2: Serve static files with Nginx
+- Custom nginx.conf for Vue Router history mode
+- Gzip compression enabled
+- Static asset caching with immutable headers
+- Runs on port 80
+
+#### Docker Compose
+- **Services**:
+  - `backend`: FastAPI application
+  - `frontend`: Nginx serving Vue build
+  - `nginx`: Reverse proxy for both services
+- **Network**: Bridge network for inter-container communication
+- **Health Checks**: All services include health check definitions
+- **Volumes**: Nginx config and SSL certificates mounted
+- **Ports**:
+  - 80 (HTTP)
+  - 443 (HTTPS, when SSL configured)
+  - 8000 (Backend direct access)
+
+#### Nginx Reverse Proxy
+- Routes `/api/*` to backend container
+- Routes `/` to frontend container
+- Rate limiting:
+  - API: 10 requests/second
+  - Auth: 5 requests/minute
+- Security headers (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection)
+- Gzip compression
+- Health check endpoint: `/health`
+- SSL/TLS ready (commented out, requires certificates)
+
+### CI/CD Pipeline
+
+#### GitHub Actions Workflow (`.github/workflows/deploy.yml`)
+
+**Trigger**: Push to `main` branch
+
+**Steps**:
+1. **Checkout Code**: Clone repository
+2. **Setup SSH**: Configure SSH key from secrets
+3. **Create Deployment Directory**: Prepare VPS directory
+4. **Sync Files**: rsync code to VPS (excludes .git, node_modules, etc.)
+5. **Create .env**: Generate backend `.env` from GitHub Secrets
+6. **Deploy**: Run `docker-compose down && build && up -d`
+7. **Verify**: Check service status with `docker-compose ps`
+8. **Cleanup**: Remove SSH keys
+
+**Required GitHub Secrets**:
+- `VPS_HOST`: VPS IP address or hostname
+- `VPS_USERNAME`: SSH username
+- `VPS_SSH_KEY`: Private SSH key (full content)
+- `GOOGLE_CLIENT_ID`: Production Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET`: Production Google OAuth Secret
+- `JWT_SECRET_KEY`: Production JWT secret (min 32 characters)
+- `FRONTEND_URL`: Production frontend URL (e.g., https://yourdomain.com)
+
+**Environment Injection**:
+The workflow creates the `.env` file on the VPS during deployment from GitHub Secrets, ensuring secrets are never committed to the repository.
+
+### Production Configuration
+
+#### Backend Environment Variables
+```env
+GOOGLE_CLIENT_ID=production-client-id
+GOOGLE_CLIENT_SECRET=production-secret
+JWT_SECRET_KEY=production-jwt-secret-min-32-chars
+JWT_ALGORITHM=HS256
+FRONTEND_URL=https://yourdomain.com
+CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+```
+
+#### CORS Configuration
+Updated `main.py` to read `CORS_ORIGINS` from environment:
+```python
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5174").split(",")
+```
+
+This allows multiple origins for production (e.g., with/without www).
+
+#### VPS Requirements
+- Ubuntu/Debian Linux (recommended)
+- Docker Engine installed
+- docker-compose installed
+- SSH access configured with public key authentication
+- Firewall configured (ports 80, 443 open)
+- Domain name pointed to VPS (optional, for SSL)
+
+#### SSL/TLS Configuration (Optional)
+1. Obtain certificates (e.g., Let's Encrypt with certbot)
+2. Place certificates in `nginx/ssl/`
+3. Uncomment HTTPS server block in `nginx/nginx.conf`
+4. Update Google OAuth redirect URIs to HTTPS
+5. Set cookie `secure=True` in `backend/app/routers/auth.py`
+
+### Deployment Workflow
+1. Developer pushes code to `main` branch
+2. GitHub Actions triggers automatically
+3. Code is synced to VPS via rsync
+4. `.env` file created from GitHub Secrets
+5. Docker images rebuilt with no cache
+6. Services restarted with docker-compose
+7. Old images pruned to save space
+8. Health checks verify deployment success
+
+### Local Docker Testing
+```bash
+# Build and run
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Check service status
+docker-compose ps
+
+# Restart specific service
+docker-compose restart backend
+
+# Stop all services
+docker-compose down
+
+# Rebuild specific service
+docker-compose build --no-cache backend
+docker-compose up -d backend
+```
+
 ---
 
 **Last Updated**: October 1, 2025
 **Primary Developer**: David P. Brazda (davidbrazda61@gmail.com)
+
+**Development Guidelines**:
+- Always use Vue 3 Composition API
+- Never commit `.env` files
+- Test Docker builds locally before pushing
+- Update documentation when adding features
