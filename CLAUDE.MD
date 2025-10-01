@@ -369,6 +369,53 @@ npm run dev
 - Check browser console for image loading errors
 - Ensure user has a Google profile picture set
 
+### Docker/Deployment Issues
+
+#### `docker-compose: command not found`
+- Modern Docker uses `docker compose` (space, not hyphen)
+- Install: `sudo apt-get install docker-compose-plugin`
+- Or use `docker compose` command instead
+
+#### Permission denied on Docker socket
+```bash
+# Add user to docker group
+sudo usermod -aG docker $USER
+
+# Logout and login, or run:
+newgrp docker
+
+# Verify
+docker ps
+```
+
+#### GitHub Actions deployment fails
+- Check GitHub Secrets are set correctly
+- Verify VPS SSH key is the complete private key (including headers)
+- Ensure VPS has Docker and docker-compose installed
+- Check VPS has ports 80/443 open: `sudo ufw status`
+- View GitHub Actions logs for detailed error messages
+
+#### Container won't start
+```bash
+# On VPS, check logs
+cd ~/v3trading
+docker compose logs backend
+docker compose logs frontend
+docker compose logs nginx
+
+# Check container status
+docker compose ps
+
+# Restart specific service
+docker compose restart backend
+```
+
+#### OAuth callback fails in production
+- Update Google Cloud Console with production URLs
+- Verify `FRONTEND_URL` in GitHub Secrets matches your VPS IP/domain
+- Check redirect URI: `http://YOUR_VPS_IP/api/auth/callback`
+- Ensure `CORS_ORIGINS` allows your frontend URL
+
 ## Git Ignore Recommendations
 - `backend/.env` - Contains secrets
 - `backend/__pycache__/` - Python cache
@@ -426,17 +473,17 @@ npm run dev
 
 #### GitHub Actions Workflow (`.github/workflows/deploy.yml`)
 
-**Trigger**: Push to `main` branch
+**Trigger**: Push to `master` branch
 
 **Steps**:
 1. **Checkout Code**: Clone repository
 2. **Setup SSH**: Configure SSH key from secrets
-3. **Create Deployment Directory**: Prepare VPS directory
-4. **Sync Files**: rsync code to VPS (excludes .git, node_modules, etc.)
-5. **Create .env**: Generate backend `.env` from GitHub Secrets
-6. **Deploy**: Run `docker-compose down && build && up -d`
-7. **Verify**: Check service status with `docker-compose ps`
-8. **Cleanup**: Remove SSH keys
+3. **Create Deployment Directory**: Prepare VPS directory (`~/v3trading`)
+4. **Sync Files**: rsync code to VPS (excludes .git, node_modules, __pycache__, venv, .env)
+5. **Create .env**: Generate backend `.env` from GitHub Secrets (auto-includes CORS_ORIGINS from FRONTEND_URL)
+6. **Deploy**: Run `docker compose down && build --no-cache && up -d`
+7. **Verify**: Check service status with `docker compose ps`
+8. **Cleanup**: Remove SSH keys for security
 
 **Required GitHub Secrets**:
 - `VPS_HOST`: VPS IP address or hostname
@@ -448,7 +495,74 @@ npm run dev
 - `FRONTEND_URL`: Production frontend URL (e.g., https://yourdomain.com)
 
 **Environment Injection**:
-The workflow creates the `.env` file on the VPS during deployment from GitHub Secrets, ensuring secrets are never committed to the repository.
+The workflow creates the `.env` file on the VPS during deployment from GitHub Secrets, ensuring secrets are never committed to the repository. `CORS_ORIGINS` is automatically set to match `FRONTEND_URL` value.
+
+**Setup Steps for Deployment**:
+
+1. **Prepare VPS:**
+```bash
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Install Docker Compose
+sudo apt-get update
+sudo apt-get install -y docker-compose-plugin
+
+# Add user to docker group (replace with your username)
+sudo usermod -aG docker $USER
+
+# Logout and login, or run:
+newgrp docker
+
+# Verify installation
+docker ps
+docker compose version
+
+# Configure firewall
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 22/tcp
+```
+
+2. **Setup SSH Keys:**
+```bash
+# On your local machine (if you don't have SSH keys)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Copy public key to VPS
+ssh-copy-id user@your_vps_ip
+
+# Copy private key content for GitHub Secrets
+cat ~/.ssh/id_ed25519
+```
+
+3. **Configure GitHub Secrets:**
+- Go to GitHub repo → Settings → Secrets and variables → Actions
+- Add all required secrets (see list above)
+- For `FRONTEND_URL` without domain: `http://YOUR_VPS_IP`
+
+4. **Update Google OAuth:**
+- Go to Google Cloud Console → Credentials
+- Add authorized JavaScript origin: `http://YOUR_VPS_IP`
+- Add authorized redirect URI: `http://YOUR_VPS_IP/api/auth/callback`
+
+5. **Deploy:**
+```bash
+git add .
+git commit -m "Initial deployment"
+git push origin master
+```
+
+6. **Monitor Deployment:**
+- Go to GitHub → Actions tab
+- Watch the deployment workflow
+- Check for any errors in the logs
+
+7. **Verify:**
+- Visit `http://YOUR_VPS_IP` in browser
+- Test Google OAuth login
+- Check API endpoints work
 
 ### Production Configuration
 
@@ -478,44 +592,208 @@ This allows multiple origins for production (e.g., with/without www).
 - Firewall configured (ports 80, 443 open)
 - Domain name pointed to VPS (optional, for SSL)
 
-#### SSL/TLS Configuration (Optional)
-1. Obtain certificates (e.g., Let's Encrypt with certbot)
-2. Place certificates in `nginx/ssl/`
-3. Uncomment HTTPS server block in `nginx/nginx.conf`
-4. Update Google OAuth redirect URIs to HTTPS
-5. Set cookie `secure=True` in `backend/app/routers/auth.py`
+#### SSL/TLS Configuration (Adding HTTPS)
+
+When you're ready to add a domain with HTTPS, follow these steps:
+
+**1. Point Domain to VPS:**
+- Configure DNS A record: `yourdomain.com` → VPS IP
+- Configure DNS A record: `www.yourdomain.com` → VPS IP (optional)
+- Wait for DNS propagation (can take up to 48 hours)
+
+**2. Obtain SSL Certificates (Let's Encrypt):**
+
+SSH into your VPS and run:
+```bash
+# Install certbot
+sudo apt-get update
+sudo apt-get install -y certbot
+
+# Stop nginx temporarily (port 80 needs to be free)
+cd ~/v3trading
+docker compose stop nginx
+
+# Obtain certificates
+sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
+
+# Start nginx again
+docker compose start nginx
+```
+
+Certificates will be saved to: `/etc/letsencrypt/live/yourdomain.com/`
+
+**3. Update Docker Compose Volumes:**
+
+Edit `docker-compose.yml` to mount certificates:
+```yaml
+nginx:
+  volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - /etc/letsencrypt:/etc/letsencrypt:ro  # Add this line
+```
+
+**4. Update Nginx Configuration:**
+
+Edit `nginx/nginx.conf` and uncomment/update the HTTPS server block:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com www.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    # ... (rest of location blocks same as HTTP)
+}
+
+# Redirect HTTP to HTTPS
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+```
+
+**5. Update Backend Cookie Settings:**
+
+Edit `backend/app/routers/auth.py` line 78:
+```python
+redirect_response.set_cookie(
+    key="access_token",
+    value=access_token,
+    httponly=True,
+    secure=True,  # Change from False to True
+    samesite="lax",
+    max_age=60 * 60 * 24 * 7
+)
+```
+
+**6. Update GitHub Secrets:**
+```
+FRONTEND_URL=https://yourdomain.com
+```
+
+Note: `CORS_ORIGINS` will automatically be set to match.
+
+**7. Update Google OAuth Settings:**
+
+In Google Cloud Console, update:
+- Authorized JavaScript origins: `https://yourdomain.com`, `https://www.yourdomain.com`
+- Authorized redirect URIs: `https://yourdomain.com/api/auth/callback`
+
+**8. Deploy Changes:**
+```bash
+git add .
+git commit -m "Add HTTPS support"
+git push origin master
+```
+
+**9. Restart Services on VPS:**
+```bash
+cd ~/v3trading
+docker compose down
+docker compose up -d
+```
+
+**10. Setup Auto-Renewal:**
+
+Let's Encrypt certificates expire after 90 days. Setup auto-renewal:
+```bash
+# Test renewal process
+sudo certbot renew --dry-run
+
+# Add cron job for auto-renewal
+sudo crontab -e
+
+# Add this line (runs twice daily):
+0 0,12 * * * certbot renew --quiet --deploy-hook "cd /home/YOUR_USERNAME/v3trading && docker compose restart nginx"
+```
+
+**Verification:**
+- Visit `https://yourdomain.com` - should work with valid SSL
+- Visit `http://yourdomain.com` - should redirect to HTTPS
+- Test Google OAuth login with HTTPS
+- Check browser shows padlock icon (secure connection)
 
 ### Deployment Workflow
-1. Developer pushes code to `main` branch
-2. GitHub Actions triggers automatically
-3. Code is synced to VPS via rsync
-4. `.env` file created from GitHub Secrets
-5. Docker images rebuilt with no cache
-6. Services restarted with docker-compose
-7. Old images pruned to save space
-8. Health checks verify deployment success
 
-### Local Docker Testing
+**Automatic Deployment Process:**
+1. Developer pushes code to `master` branch
+2. GitHub Actions triggers automatically
+3. SSH connection established to VPS
+4. Code synced to VPS via rsync (to `~/v3trading`)
+5. `.env` file created from GitHub Secrets
+6. Docker images rebuilt with `--no-cache` flag
+7. Services restarted with `docker compose up -d`
+8. Old images pruned to save disk space
+9. Health checks verify deployment success
+
+**Common Deployment Commands on VPS:**
 ```bash
-# Build and run
-docker-compose up -d
+# Check deployment status
+cd ~/v3trading
+docker compose ps
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
+docker compose logs backend
+docker compose logs frontend
+docker compose logs nginx
 
-# Check service status
-docker-compose ps
-
-# Restart specific service
-docker-compose restart backend
+# Restart services
+docker compose restart
 
 # Stop all services
-docker-compose down
+docker compose down
+
+# Rebuild and restart
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+# Check resource usage
+docker stats
+
+# Clean up
+docker system prune -a
+```
+
+### Local Docker Testing (Optional)
+
+**Note:** Requires Docker Desktop installed on macOS/Windows or Docker Engine on Linux.
+
+```bash
+# From project root
+cd /path/to/v3trading
+
+# Create local .env file for testing
+cp backend/.env.example backend/.env
+# Edit backend/.env with your development credentials
+
+# Build and run
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Check service status
+docker compose ps
+
+# Restart specific service
+docker compose restart backend
+
+# Stop all services
+docker compose down
 
 # Rebuild specific service
-docker-compose build --no-cache backend
-docker-compose up -d backend
+docker compose build --no-cache backend
+docker compose up -d backend
 ```
+
+If you don't have Docker installed locally, you can skip local testing and deploy directly to VPS via GitHub Actions.
 
 ---
 

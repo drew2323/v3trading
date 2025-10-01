@@ -198,17 +198,91 @@ Automated deployment to VPS on push to `main` branch.
 - `FRONTEND_URL` - Production frontend URL (e.g., https://yourdomain.com)
 
 **Deployment Process:**
-1. Push to `main` branch
-2. GitHub Actions builds Docker images
-3. Deploys to VPS via SSH
-4. Creates `.env` file from secrets
-5. Runs `docker-compose up -d`
+1. Push to `master` branch
+2. GitHub Actions builds Docker images on VPS
+3. Deploys via SSH
+4. Creates `.env` file from GitHub Secrets
+5. Runs `docker compose up -d`
+6. Verifies deployment with health checks
 
-#### VPS Requirements
-- Docker and docker-compose installed
-- SSH access configured with key authentication
-- Ports 80/443 open
-- Domain configured (optional, for SSL)
+#### VPS Setup
+
+**1. Install Docker:**
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+```
+
+**2. Install Docker Compose:**
+```bash
+sudo apt-get update
+sudo apt-get install -y docker-compose-plugin
+```
+
+**3. Configure Docker Permissions:**
+```bash
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# Logout and login again, or run:
+newgrp docker
+
+# Verify
+docker ps
+docker compose version
+```
+
+**4. Configure Firewall:**
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 22/tcp  # SSH
+```
+
+**5. Setup SSH Key Authentication:**
+- Generate SSH key pair on your local machine (if you don't have one)
+- Add public key to VPS: `~/.ssh/authorized_keys`
+- Add private key to GitHub Secrets as `VPS_SSH_KEY`
+
+**6. Configure GitHub Secrets:**
+
+Go to your GitHub repository → Settings → Secrets and variables → Actions → New repository secret
+
+Add the following secrets:
+- `VPS_HOST` - Your VPS IP (e.g., `123.45.67.89` or domain)
+- `VPS_USERNAME` - SSH username (e.g., `root` or `ubuntu`)
+- `VPS_SSH_KEY` - Complete private SSH key content
+- `GOOGLE_CLIENT_ID` - Production Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET` - Production Google OAuth Client Secret
+- `JWT_SECRET_KEY` - Secure random string (min 32 characters)
+- `FRONTEND_URL` - VPS URL (e.g., `http://123.45.67.89` or `https://yourdomain.com`)
+
+**7. Update Google OAuth Settings:**
+
+In Google Cloud Console, add to your OAuth credentials:
+- Authorized JavaScript origins: `http://YOUR_VPS_IP` (or your domain)
+- Authorized redirect URIs: `http://YOUR_VPS_IP/api/auth/callback`
+
+**Important Notes:**
+- `CORS_ORIGINS` is automatically set to match `FRONTEND_URL`
+- Without a domain, use `http://YOUR_VPS_IP` for `FRONTEND_URL`
+- When you add SSL/domain, update to `https://yourdomain.com`
+- Workflow triggers on push to `master` branch
+
+#### Adding HTTPS/SSL (When Ready)
+
+**Quick Steps:**
+1. Point your domain DNS to VPS IP
+2. Install certbot on VPS: `sudo apt-get install certbot`
+3. Obtain certificates: `sudo certbot certonly --standalone -d yourdomain.com`
+4. Update `docker-compose.yml` to mount `/etc/letsencrypt:/etc/letsencrypt:ro`
+5. Edit `nginx/nginx.conf` - uncomment HTTPS server block
+6. Edit `backend/app/routers/auth.py` - change `secure=False` to `secure=True`
+7. Update GitHub Secret `FRONTEND_URL` to `https://yourdomain.com`
+8. Update Google OAuth URLs to HTTPS
+9. Deploy and test
+
+**Detailed instructions:** See CLAUDE.MD "SSL/TLS Configuration" section for complete step-by-step guide including certificate auto-renewal setup.
 
 ### Manual Production Build
 
