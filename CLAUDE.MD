@@ -484,6 +484,7 @@ docker compose restart backend
 - No auto-deploy on master branch pushes (prevents accidental production deploys)
 - Version extraction and Docker image tagging
 - Deployment history tracking in `.deployment-version` file
+- **Automatic GitHub Release creation** with changelog and download links
 
 **Steps**:
 1. **Checkout Code**: Clone repository
@@ -761,6 +762,7 @@ git push origin v1.1.0
 9. Services restarted with `docker compose up -d`
 10. Old untagged images pruned to save disk space
 11. Health checks verify deployment success
+12. **GitHub Release created automatically** with changelog, links, and downloads
 
 **Manual Deployment (Emergency):**
 - Go to GitHub → Actions → Deploy to VPS → Run workflow

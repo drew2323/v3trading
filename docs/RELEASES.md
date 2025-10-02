@@ -4,6 +4,12 @@
 
 V3Trading uses **tag-based releases** with semantic versioning. Deployments are triggered only when you create and push version tags, giving you full control over when code goes to production.
 
+**What happens when you push a tag:**
+- ✅ Deploys to production VPS
+- ✅ Tags Docker images with version number
+- ✅ **Creates GitHub Release** with changelog and download links
+- ✅ Records deployment version on server
+
 ## Quick Start
 
 ```bash
@@ -18,9 +24,12 @@ git push origin v1.0.0
 
 # 3. Watch deployment in GitHub Actions
 # Go to: https://github.com/your-username/v3trading/actions
+
+# 4. View the created release
+# Go to: https://github.com/your-username/v3trading/releases
 ```
 
-That's it! The deployment will automatically start.
+That's it! The deployment will automatically start and a GitHub Release will be created with your changelog.
 
 ## Semantic Versioning
 
@@ -189,7 +198,12 @@ git log v1.0.0..v1.1.0 --oneline
 
 Go to: `https://github.com/your-username/v3trading/releases`
 
-GitHub automatically creates release pages from your tags.
+**GitHub Releases are automatically created** when you push a tag. Each release includes:
+- 📝 Auto-generated changelog from commits
+- 🔗 Links to deployment and API documentation
+- 📦 Downloadable source code archives (.zip, .tar.gz)
+- 📊 Deployment timestamp and commit information
+- 🏷️ Version tag reference
 
 ## Best Practices
 
