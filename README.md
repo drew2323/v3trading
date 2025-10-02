@@ -186,7 +186,19 @@ docker-compose down
 
 #### GitHub Actions CI/CD
 
-Automated deployment to VPS on push to `main` branch.
+**Release-Based Deployment** - Deployments are triggered by creating version tags.
+
+**Quick Deploy:**
+```bash
+# Create and push a version tag
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+**Deployment Triggers:**
+- ✅ **Tag Push**: `v*.*.*` (e.g., v1.0.0, v1.2.3) - Automatic deployment
+- ✅ **Manual**: GitHub Actions UI - Emergency deployments
+- ❌ **Master Branch**: No auto-deploy (prevents accidental production updates)
 
 **Required GitHub Secrets:**
 - `VPS_HOST` - Your VPS IP or hostname
@@ -197,13 +209,16 @@ Automated deployment to VPS on push to `main` branch.
 - `JWT_SECRET_KEY` - Production JWT secret (min 32 chars)
 - `FRONTEND_URL` - Production frontend URL (e.g., https://yourdomain.com)
 
-**Deployment Process:**
-1. Push to `master` branch
-2. GitHub Actions builds Docker images on VPS
-3. Deploys via SSH
-4. Creates `.env` file from GitHub Secrets
-5. Runs `docker compose up -d`
-6. Verifies deployment with health checks
+**What Happens on Deployment:**
+1. Tag pushed → GitHub Actions triggered
+2. Version extracted from tag (e.g., `v1.0.0`)
+3. Code synced to VPS via SSH/rsync
+4. `.env` file created from GitHub Secrets
+5. Docker images built and tagged with version
+6. Services restarted with `docker compose up -d`
+7. Deployment verified with health checks
+
+📖 **Complete Release Guide:** See [docs/RELEASES.md](./docs/RELEASES.md) for semantic versioning, rollback procedures, and best practices.
 
 #### VPS Setup
 
@@ -267,7 +282,8 @@ In Google Cloud Console, add to your OAuth credentials:
 - `CORS_ORIGINS` is automatically set to match `FRONTEND_URL`
 - Without a domain, use `http://YOUR_VPS_IP` for `FRONTEND_URL`
 - When you add SSL/domain, update to `https://yourdomain.com`
-- Workflow triggers on push to `master` branch
+- **Deployment is tag-based** - push to master does NOT trigger deployment
+- First deployment: Create tag `v1.0.0` after setting up secrets
 
 #### Adding HTTPS/SSL (When Ready)
 

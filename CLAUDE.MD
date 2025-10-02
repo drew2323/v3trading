@@ -426,6 +426,8 @@ docker compose restart backend
 
 ## Deployment & DevOps
 
+**📖 For Release Management:** See [docs/RELEASES.md](../docs/RELEASES.md) for complete guide on creating releases, semantic versioning, and rollback procedures.
+
 ### Docker Configuration
 
 #### Backend Dockerfile
@@ -473,7 +475,15 @@ docker compose restart backend
 
 #### GitHub Actions Workflow (`.github/workflows/deploy.yml`)
 
-**Trigger**: Push to `master` branch
+**Triggers:**
+- **Tag Push**: `v*.*.*` (e.g., v1.0.0, v1.2.3) - Primary deployment method
+- **Manual**: workflow_dispatch - Emergency/manual deployments
+
+**Deployment Strategy:**
+- Automatic deployment ONLY on version tag creation
+- No auto-deploy on master branch pushes (prevents accidental production deploys)
+- Version extraction and Docker image tagging
+- Deployment history tracking in `.deployment-version` file
 
 **Steps**:
 1. **Checkout Code**: Clone repository
@@ -547,11 +557,16 @@ cat ~/.ssh/id_ed25519
 - Add authorized JavaScript origin: `http://YOUR_VPS_IP`
 - Add authorized redirect URI: `http://YOUR_VPS_IP/api/auth/callback`
 
-5. **Deploy:**
+5. **Create First Release:**
 ```bash
+# Commit your code
 git add .
-git commit -m "Initial deployment"
+git commit -m "Initial release"
 git push origin master
+
+# Create version tag to trigger deployment
+git tag -a v1.0.0 -m "Release v1.0.0 - Initial production release"
+git push origin v1.0.0
 ```
 
 6. **Monitor Deployment:**
@@ -720,16 +735,38 @@ sudo crontab -e
 
 ### Deployment Workflow
 
-**Automatic Deployment Process:**
-1. Developer pushes code to `master` branch
-2. GitHub Actions triggers automatically
+**Release-Based Deployment Process:**
+
+**Creating a Release:**
+```bash
+# 1. Ensure code is committed
+git add .
+git commit -m "Add new trading features"
+git push origin master
+
+# 2. Create version tag (triggers deployment)
+git tag -a v1.1.0 -m "Release v1.1.0 - New features"
+git push origin v1.1.0
+```
+
+**What Happens Automatically:**
+1. GitHub Actions detects tag push
+2. Extracts version number (e.g., `v1.1.0`)
 3. SSH connection established to VPS
 4. Code synced to VPS via rsync (to `~/v3trading`)
 5. `.env` file created from GitHub Secrets
-6. Docker images rebuilt with `--no-cache` flag
-7. Services restarted with `docker compose up -d`
-8. Old images pruned to save disk space
-9. Health checks verify deployment success
+6. Version recorded in `.deployment-version` file
+7. Docker images rebuilt with `--no-cache` flag
+8. Images tagged with version number (`v3trading-backend:v1.1.0`)
+9. Services restarted with `docker compose up -d`
+10. Old untagged images pruned to save disk space
+11. Health checks verify deployment success
+
+**Manual Deployment (Emergency):**
+- Go to GitHub → Actions → Deploy to VPS → Run workflow
+- Creates deployment tagged as `manual-YYYYMMDD-HHMMSS`
+
+**See [docs/RELEASES.md](../docs/RELEASES.md) for complete release management guide.**
 
 **Common Deployment Commands on VPS:**
 ```bash
