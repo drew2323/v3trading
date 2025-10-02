@@ -97,6 +97,36 @@ jobs:
             docker compose ps
           EOF
 
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## 🚀 Deployment Information
+
+            **Version:** ${{ steps.version.outputs.version }}
+            **Deployed:** ${{ github.event.head_commit.timestamp }}
+            **Commit:** ${{ github.sha }}
+
+            ## 📝 Changes
+
+            ${{ github.event.head_commit.message }}
+
+            ## 🔗 Links
+
+            - [View Deployment](${{ secrets.FRONTEND_URL }})
+            - [API Documentation](${{ secrets.FRONTEND_URL }}/docs)
+
+            ---
+
+            **Note:** This release was automatically deployed to production VPS.
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cleanup SSH
         if: always()
         run: |
