@@ -37,6 +37,7 @@ declare module 'vue' {
     Menu: typeof import('primevue/menu')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     NotificationsWidget: typeof import('./src/components/dashboard/NotificationsWidget.vue')['default']
+    Password: typeof import('primevue/password')['default']
     PricingWidget: typeof import('./src/components/landing/PricingWidget.vue')['default']
     ProgressBar: typeof import('primevue/progressbar')['default']
     RadioButton: typeof import('primevue/radiobutton')['default']
