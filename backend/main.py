@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Configure CORS origins from environment
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5174").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,

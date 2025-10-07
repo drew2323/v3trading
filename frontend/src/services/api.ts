@@ -8,6 +8,7 @@ const API_TIMEOUT = 30000
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
+  withCredentials: true, // Enable sending/receiving cookies
   headers: {
     'Content-Type': 'application/json',
   },

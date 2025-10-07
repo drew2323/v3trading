@@ -26,13 +26,14 @@ oauth.register(
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5174")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
 @router.get("/google")
 async def login_google(request: Request):
     """Initiate Google OAuth flow"""
-    redirect_uri = request.url_for('auth_callback')
+    # Use explicit redirect URI to avoid port issues with proxy
+    redirect_uri = "http://localhost:8000/api/auth/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 
