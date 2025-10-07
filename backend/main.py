@@ -4,9 +4,11 @@ from starlette.middleware.sessions import SessionMiddleware
 import os
 from dotenv import load_dotenv
 
-from app.routers import trades, positions, auth
-
+# Load environment variables before importing routers
+# (routers may read env vars at module level)
 load_dotenv()
+
+from app.routers import trades, positions, auth
 
 app = FastAPI(title="V3Trading API", version="0.1.0")
 
