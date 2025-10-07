@@ -57,6 +57,7 @@ jobs:
           GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_ALGORITHM=HS256
+          BACKEND_URL=${{ secrets.FRONTEND_URL }}
           FRONTEND_URL=${{ secrets.FRONTEND_URL }}
           CORS_ORIGINS=${{ secrets.FRONTEND_URL }}
           ENVEOF

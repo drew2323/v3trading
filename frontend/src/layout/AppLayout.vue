@@ -83,7 +83,7 @@ function isOutsideClicked(event) {
 </script>
 
 <template>
-    <div class="layout-wrapper" :class="containerClass">
+    <div class="layout-wrapper" :class="[containerClass, `layout-card-${layoutConfig.cardStyle}`]">
         <app-topbar></app-topbar>
         
         <!-- Horizontal Menu (when horizontal mode) -->
