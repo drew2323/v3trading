@@ -15,6 +15,9 @@ export const authService = {
 
   // Get Google login URL
   getGoogleLoginUrl: (): string => {
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/auth/google`
+    // Use current origin + /api for production compatibility
+    // In development with Vite proxy, /api routes to localhost:8000
+    // In production with Nginx, /api routes to backend container
+    return `${window.location.origin}/api/auth/google`
   },
 }
