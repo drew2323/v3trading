@@ -3,13 +3,10 @@ from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config
 import os
-from dotenv import load_dotenv
 
 from app.models.user import User
 from app.utils.mock_users import get_user_by_google_id, create_user, update_last_login
 from app.utils.auth import create_access_token
-
-load_dotenv()
 
 # OAuth configuration
 config = Config(environ={
