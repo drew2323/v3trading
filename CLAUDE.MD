@@ -1,4 +1,4 @@
-# V3Trading Project - Development Documentation
+# V3Trading Project - Overview
 
 ## Project Overview
 V3Trading is a full-stack trading application with a Vue 3 frontend and FastAPI backend, featuring Google OAuth authentication and a mock trading API.
@@ -9,7 +9,6 @@ V3Trading is a full-stack trading application with a Vue 3 frontend and FastAPI 
 - **Framework**: Vue 3 with TypeScript
 - **Build Tool**: Vite
 - **UI Framework**: PrimeVue 4 with PrimeIcons
-- **Theming**: PrimeVue Themes (@primevue/themes)
 - **State Management**: Pinia (Composition API style)
 - **Router**: Vue Router 4
 - **HTTP Client**: Axios
@@ -22,957 +21,193 @@ V3Trading is a full-stack trading application with a Vue 3 frontend and FastAPI 
 - **Language**: Python
 - **Authentication**: OAuth2 (Google) with JWT
 - **Session Management**: Starlette SessionMiddleware
-- **Dependencies**:
-  - `fastapi==0.115.0`
-  - `uvicorn[standard]==0.30.6`
-  - `pydantic==2.9.0`
-  - `python-dotenv==1.0.1`
-  - `authlib==1.3.0`
-  - `itsdangerous==2.1.2`
-  - `python-jose[cryptography]==3.3.0`
-  - `httpx==0.27.0`
-  - `email-validator`
 - **Port**: 8000
 
-## Project Structure
+## Quick Start
 
-```
-v3trading/
-├── backend/
-│   ├── app/
-│   │   ├── dependencies/
-│   │   │   └── auth.py              # Auth dependencies for route protection
-│   │   ├── models/
-│   │   │   ├── trade.py             # Trade Pydantic models
-│   │   │   ├── position.py          # Position Pydantic models
-│   │   │   └── user.py              # User Pydantic models
-│   │   ├── routers/
-│   │   │   ├── auth.py              # OAuth & authentication routes
-│   │   │   ├── trades.py            # Trading endpoints
-│   │   │   └── positions.py         # Position endpoints
-│   │   └── utils/
-│   │       ├── auth.py              # JWT token utilities
-│   │       ├── mock_data.py         # Mock trading data generators
-│   │       └── mock_users.py        # Mock user storage (in-memory)
-│   ├── main.py                      # FastAPI app entry point
-│   ├── requirements.txt
-│   ├── .env                         # Environment variables (not in git)
-│   └── .env.example                 # Environment variables template
-│
-└── frontend/
-    ├── src/
-    │   ├── assets/                  # Static assets, styles, images
-    │   │   ├── demo/                # Demo data (flags, etc.)
-    │   │   └── layout/              # Layout styles and variables
-    │   ├── components/              # Vue components
-    │   │   ├── dashboard/           # Dashboard widgets (Stats, RecentSales, etc.)
-    │   │   ├── landing/             # Landing page components (Hero, Features, etc.)
-    │   │   └── FloatingConfigurator.vue  # Theme configurator
-    │   ├── composables/             # Composition functions (currently empty)
-    │   ├── layout/                  # App layout components
-    │   │   ├── composables/         # Layout-specific composables
-    │   │   ├── AppLayout.vue        # Main layout wrapper
-    │   │   ├── AppTopbar.vue        # Top navigation bar
-    │   │   ├── AppSidebar.vue       # Sidebar navigation
-    │   │   ├── AppMenu.vue          # Main menu
-    │   │   ├── AppMenuItem.vue      # Menu item component
-    │   │   ├── AppFooter.vue        # Footer component
-    │   │   ├── AppConfigurator.vue  # Theme configuration panel
-    │   │   └── AppSettings.vue      # Settings management
-    │   ├── router/
-    │   │   └── index.js             # Router with auth guards
-    │   ├── service/                 # Legacy demo services (Country, Customer, Node, Photo, Product)
-    │   ├── services/                # API services (current)
-    │   │   ├── api.ts               # Axios instance with interceptors
-    │   │   ├── authService.ts       # Auth API calls
-    │   │   └── tradingService.ts    # Trading API calls
-    │   ├── stores/
-    │   │   ├── authStore.ts         # Auth state management (Pinia)
-    │   │   └── tradingStore.ts      # Trading state management (Pinia)
-    │   ├── types/
-    │   │   ├── index.ts             # Common types (Trade, Position, etc.)
-    │   │   └── auth.ts              # Auth types (User)
-    │   ├── views/
-    │   │   ├── Dashboard.vue        # Main dashboard with widgets
-    │   │   ├── HomeView.vue         # Landing page with login/user info
-    │   │   ├── ApiTest.vue          # Protected API testing page
-    │   │   ├── pages/               # Utility pages
-    │   │   │   ├── auth/            # Auth pages (Login, Register, Access, Error)
-    │   │   │   ├── Crud.vue         # CRUD demo page
-    │   │   │   ├── Documentation.vue # Documentation page
-    │   │   │   ├── Empty.vue        # Empty page template
-    │   │   │   ├── Landing.vue      # Marketing landing page
-    │   │   │   └── NotFound.vue     # 404 page
-    │   │   └── uikit/               # PrimeVue UI component demos
-    │   │       ├── ButtonDoc.vue    # Button components demo
-    │   │       ├── ChartDoc.vue     # Chart.js integration demo
-    │   │       ├── FileDoc.vue      # File upload demo
-    │   │       ├── FormLayout.vue   # Form layout examples
-    │   │       ├── InputDoc.vue     # Input components demo
-    │   │       ├── ListDoc.vue      # List components demo
-    │   │       ├── MediaDoc.vue     # Media components demo
-    │   │       ├── MenuDoc.vue      # Menu components demo
-    │   │       ├── MessagesDoc.vue  # Messages/toast demo
-    │   │       ├── MiscDoc.vue      # Misc components demo
-    │   │       ├── OverlayDoc.vue   # Overlay components demo
-    │   │       ├── PanelsDoc.vue    # Panel components demo
-    │   │       ├── TableDoc.vue     # DataTable demo
-    │   │       ├── TimelineDoc.vue  # Timeline demo
-    │   │       └── TreeDoc.vue      # Tree components demo
-    │   ├── App.vue
-    │   └── main.ts
-    ├── vite.config.ts               # Vite config with proxy
-    ├── tsconfig.json                # TypeScript config
-    ├── tailwind.config.js           # Tailwind CSS config
-    ├── postcss.config.js            # PostCSS config
-    ├── package.json
-    └── .env.example
-```
-
-## Features Implemented
-
-### 1. UI/UX System
-
-#### PrimeVue Integration
-- **UI Framework**: PrimeVue 4 with full component library
-- **Theming**: Dynamic theme configuration with AppSettings
-- **Layout System**:
-  - Responsive AppLayout with sidebar navigation
-  - AppTopbar with user menu and notifications
-  - AppSidebar with collapsible menu
-  - AppFooter with customizable content
-  - AppSettings for user preferences (stored in localStorage)
-
-#### Dashboard
-- **Widgets**:
-  - StatsWidget: Key metrics display
-  - RevenueStreamWidget: Revenue visualization
-  - RecentSalesWidget: Recent transactions table
-  - BestSellingWidget: Top products/symbols
-  - NotificationsWidget: Activity feed
-- **Charts**: Chart.js integration for data visualization
-
-#### UI Kit Demos
-Complete PrimeVue component demonstrations in `/uikit/*`:
-- Button, Input, Form components
-- DataTable with sorting, filtering, pagination
-- Tree, List, Menu components
-- Overlay components (Dialog, Sidebar, etc.)
-- Media components (Image, Carousel, etc.)
-- Messages and Toast notifications
-- Charts and Timeline
-- File upload and handling
-
-### 2. Authentication System
-
-#### Google OAuth Flow
-- **Login Endpoint**: `/api/auth/google`
-  - Redirects to Google OAuth consent screen
-
-- **Callback Endpoint**: `/api/auth/callback`
-  - Handles Google OAuth callback
-  - Creates or updates user in mock storage
-  - Generates JWT token
-  - Sets httpOnly cookie
-  - Redirects to frontend
-
-- **Current User Endpoint**: `/api/auth/me`
-  - Returns authenticated user info
-  - Requires valid JWT cookie
-
-- **Logout Endpoint**: `/api/auth/logout`
-  - Clears authentication cookie
-
-#### Security Features
-- JWT tokens stored in httpOnly cookies (XSS protection)
-- Token expiration: 7 days
-- CORS configured for localhost:5174
-- Session middleware for OAuth state management
-
-#### Frontend Auth Integration
-- **Auth Store** (`stores/authStore.ts`):
-  - `user`: Current user state
-  - `isAuthenticated`: Computed boolean
-  - `fetchUser()`: Get current user from backend
-  - `login()`: Redirect to Google OAuth
-  - `logout()`: Clear session and redirect
-
-- **Route Guards** (`router/index.js`):
-  - Protected routes use `meta: { requiresAuth: true }`
-  - Automatically fetch user if not loaded
-  - Redirect to login if not authenticated
-  - Navigation guard implemented in `beforeEach`
-
-- **Authentication Pages**:
-  - Login (`/auth/login`): Standard login page
-  - LoginAlt (`/auth/login-alt`): Alternative login design
-  - Register (`/auth/register`): User registration
-  - Access (`/auth/access`): Access denied page
-  - Error (`/auth/error`): Error page
-
-- **HomeView & Dashboard**:
-  - Dashboard is the default route (`/`)
-  - Shows dashboard widgets when authenticated
-  - Displays user profile in AppTopbar
-  - Landing page available at `/landing` for marketing
-
-### 3. Trading API (Mock Data)
-
-#### Data Models
-
-**Trade**:
-```typescript
-{
-  id: string
-  symbol: string
-  side: "buy" | "sell"
-  price: number
-  quantity: number
-  status: "pending" | "executed" | "cancelled"
-  timestamp: string (ISO format)
-}
-```
-
-**Position**:
-```typescript
-{
-  id: string
-  symbol: string
-  quantity: number
-  averagePrice: number
-  currentPrice: number
-  unrealizedPnL: number
-  realizedPnL: number
-}
-```
-
-#### API Endpoints
-
-**Trades** (`/api/trades`):
-- `GET /api/trades` - List trades with pagination
-  - Query params: `page`, `limit`, `sortBy`, `sortOrder`
-  - Returns: `PaginatedResponse<Trade>`
-
-- `GET /api/trades/{id}` - Get single trade
-- `POST /api/trades` - Create new trade
-- `PATCH /api/trades/{id}/cancel` - Cancel trade
-
-**Positions** (`/api/positions`):
-- `GET /api/positions` - List all positions
-- `GET /api/positions/{symbol}` - Get single position
-- `POST /api/positions/{symbol}/close` - Close position
-
-#### Mock Data
-- **Storage**: In-memory (resets on server restart)
-- **Trades**: 20 pre-generated mock trades
-- **Positions**: 5 pre-generated positions
-- **Symbols**: AAPL, GOOGL, MSFT, TSLA, AMZN, NVDA, META, BTC, ETH, SPY
-
-### 4. Frontend Architecture
-
-#### Service Layer
-- **API Client** (`services/api.ts`):
-  - Axios instance with base URL `/api`
-  - Request interceptor: Adds auth token if available
-  - Response interceptor: Handles common errors (401, 403, 404, 500)
-  - Helper methods: `get`, `post`, `put`, `patch`, `delete`
-
-- **Service Pattern**:
-  - `authService.ts`: Authentication operations
-  - `tradingService.ts`: Trading operations
-  - All services use typed responses
-
-#### State Management (Pinia)
-- **Trading Store** (`stores/tradingStore.ts`):
-  - State: trades, positions, currentTrade, loading, error
-  - Pagination: currentPage, pageSize, totalTrades
-  - Actions: fetchTrades, createTrade, cancelTrade, fetchPositions, closePosition
-  - Computed: totalPages, hasPositions, totalUnrealizedPnL
-
-- **Auth Store** (`stores/authStore.ts`):
-  - State: user, loading, error
-  - Computed: isAuthenticated
-  - Actions: fetchUser, login, logout
-
-#### API Test Page (`views/ApiTest.vue`)
-- Protected route (requires authentication)
-- Tests all trading endpoints
-- Features:
-  - Trades list with pagination
-  - Create sample trade button
-  - Cancel pending trades
-  - Positions list with P&L
-  - Close positions
-  - Real-time total unrealized P&L
-  - Error and loading states
-
-## Configuration
-
-### Backend Environment Variables (`.env`)
-```env
-GOOGLE_CLIENT_ID=client-id
-GOOGLE_CLIENT_SECRET=secret-id
-JWT_SECRET_KEY=your-secret-key-change-this-in-production-min-32-chars
-JWT_ALGORITHM=HS256
-FRONTEND_URL=http://localhost:5174
-```
-
-### Google Cloud Console OAuth Setup
-**Authorized JavaScript origins**:
-- `http://localhost:5174`
-- `http://localhost:8000`
-
-**Authorized redirect URIs**:
-- `http://localhost:8000/api/auth/callback`
-
-### Vite Proxy Configuration
-Frontend proxies `/api` requests to `http://localhost:8000`
-
-## Running the Application
-
-### Backend
+### Development
 ```bash
+# Backend
 cd backend
 pip install -r requirements.txt
+cp .env.example .env  # Configure with your credentials
 python -m uvicorn main:app --reload --port 8000
-```
 
-### Frontend
-```bash
+# Frontend (in new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-### Access Points
-- Frontend: http://localhost:5174
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+**Access**: http://localhost:5173
 
-## User Flow
-
-1. User visits http://localhost:5174/ (or configured port)
-2. If not authenticated, redirected to `/auth/login`
-3. Clicks "Sign in with Google" → redirects to Google OAuth
-4. Authenticates with Google account
-5. Redirects back to frontend with httpOnly cookie containing JWT
-6. Frontend fetches user info and displays dashboard
-7. Dashboard shows widgets with trading stats, charts, and activity
-8. User profile appears in AppTopbar with dropdown menu
-9. Sidebar navigation provides access to:
-   - Dashboard (home)
-   - UI Kit demos (for development reference)
-   - CRUD operations
-   - Documentation
-   - Empty page template
-10. User can access API test page for trading operations
-11. User can logout, which clears cookie and returns to login screen
-
-### Alternative Flows
-- **Landing Page**: `/landing` - Marketing/public landing page
-- **Direct Routes**: Login, Register, Error pages accessible without layout
-- **404 Handling**: NotFound page for invalid routes
-
-## Development Notes
-
-### Authentication
-- User storage is in-memory (mock) - resets on backend restart
-- New users are automatically created on first Google login
-- JWT tokens expire after 7 days
-- httpOnly cookies used for security (cannot be accessed by JavaScript)
-
-### Mock Data
-- Trading data is in-memory and regenerates on server restart
-- Users can create/cancel trades and close positions
-- Changes persist during runtime but are lost on restart
-
-### TypeScript
-- Frontend is fully typed with TypeScript
-- Type definitions in `src/types/`
-- Router is JavaScript (`index.js`) but can be migrated to TypeScript
-- Backend uses Pydantic for type validation
-
-### UI Framework
-- PrimeVue 4 provides comprehensive component library
-- Auto-import resolver for components
-- Theme customization via AppConfigurator
-- Responsive design with PrimeVue layout system
-- Legacy demo services in `src/service/` for UI kit examples
-
-### CORS
-- Currently configured for localhost development
-- Default origin: `http://localhost:5174` (configurable via env)
-- Credentials enabled for cookie support
-- Production: Configured via `CORS_ORIGINS` environment variable
-
-### Port Configuration
-- Documentation references port 5174
-- Default Vite dev server port is typically 5173
-- Configurable in `vite.config.ts`
-- Backend always runs on port 8000
-
-## Future Enhancements (Not Yet Implemented)
-- Database integration (PostgreSQL/MongoDB) - currently uses in-memory mock storage
-- Real trading API integration - currently uses mock data generators
-- WebSocket for real-time price updates
-- Order book visualization
-- Advanced portfolio analytics
-- Trade history charts and reporting
-- Multi-factor authentication
-- API rate limiting (partial implementation in nginx)
-- User settings/preferences persistence (AppSettings uses localStorage only)
-- Email notifications
-- Trading strategies/bots
-- Migration of router to TypeScript
-- Integration of custom trading components into Dashboard
-- Remove/archive legacy UI kit demo pages for production
-
-## API Response Examples
-
-### GET /api/trades
-```json
-{
-  "items": [
-    {
-      "id": "uuid",
-      "symbol": "AAPL",
-      "side": "buy",
-      "price": 175.50,
-      "quantity": 10,
-      "status": "executed",
-      "timestamp": "2025-10-01T12:00:00"
-    }
-  ],
-  "total": 20,
-  "page": 1,
-  "limit": 10,
-  "totalPages": 2
-}
-```
-
-### GET /api/auth/me
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "name": "John Doe",
-  "picture": "https://lh3.googleusercontent.com/...",
-  "google_id": "113705771254809700048"
-}
-```
-
-## Troubleshooting
-
-### Backend won't start
-- Check if port 8000 is in use: `lsof -ti:8000`
-- Verify `.env` file exists with correct credentials
-- Check Python dependencies: `pip install -r requirements.txt`
-
-### Frontend won't connect to backend
-- Verify backend is running on port 8000
-- Check proxy configuration in `vite.config.ts`
-- Verify CORS settings in `backend/main.py`
-
-### OAuth not working
-- Verify Google Cloud Console credentials
-- Check redirect URIs match exactly
-- Clear browser cookies and try again
-- Check backend logs for detailed error messages
-
-### Picture not displaying
-- Verify Google OAuth returns `picture` field
-- Check browser console for image loading errors
-- Ensure user has a Google profile picture set
-
-### Docker/Deployment Issues
-
-#### `docker-compose: command not found`
-- Modern Docker uses `docker compose` (space, not hyphen)
-- Install: `sudo apt-get install docker-compose-plugin`
-- Or use `docker compose` command instead
-
-#### Permission denied on Docker socket
+### Docker (Local Testing)
 ```bash
-# Add user to docker group
-sudo usermod -aG docker $USER
-
-# Logout and login, or run:
-newgrp docker
-
-# Verify
-docker ps
+docker compose up -d
 ```
 
-#### GitHub Actions deployment fails
-- Check GitHub Secrets are set correctly
-- Verify VPS SSH key is the complete private key (including headers)
-- Ensure VPS has Docker and docker-compose installed
-- Check VPS has ports 80/443 open: `sudo ufw status`
-- View GitHub Actions logs for detailed error messages
+## Documentation
 
-#### Container won't start
-```bash
-# On VPS, check logs
-cd ~/v3trading
-docker compose logs backend
-docker compose logs frontend
-docker compose logs nginx
+### Core Documentation
+- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Getting started, development workflow, coding standards
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Project structure, frontend/backend architecture
+- **[AUTHENTICATION.md](docs/AUTHENTICATION.md)** - OAuth flow, security, user management
+- **[API.md](docs/API.md)** - API endpoints, data models, examples
+- **[UI_FRAMEWORK.md](docs/UI_FRAMEWORK.md)** - PrimeVue integration, layouts, components
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** - Docker, CI/CD, production setup
+- **[RELEASES.md](docs/RELEASES.md)** - Release management, semantic versioning
 
-# Check container status
-docker compose ps
+## Key Features
 
-# Restart specific service
-docker compose restart backend
+### ✅ Implemented
+- Google OAuth authentication with JWT
+- PrimeVue UI framework with dynamic theming
+- Responsive dashboard with widgets and charts
+- Mock trading API (trades, positions, CRUD operations)
+- Docker containerization
+- GitHub Actions CI/CD pipeline
+- Nginx reverse proxy with rate limiting
+
+### 🚧 In Progress / Planned
+- Database persistence (currently in-memory)
+- Real trading API integration
+- WebSocket for real-time updates
+- Router TypeScript migration
+- Production UI kit cleanup
+
+## Project Structure
+
+```
+v3trading/
+├── backend/          # FastAPI application
+│   ├── app/
+│   │   ├── routers/      # API endpoints
+│   │   ├── models/       # Pydantic models
+│   │   ├── utils/        # Utilities, mock data
+│   │   └── dependencies/ # Auth dependencies
+│   └── main.py
+│
+├── frontend/         # Vue 3 application
+│   ├── src/
+│   │   ├── layout/       # App layout components
+│   │   ├── components/   # Reusable components
+│   │   ├── views/        # Page components
+│   │   ├── stores/       # Pinia state management
+│   │   ├── services/     # API service layer
+│   │   ├── router/       # Vue Router config
+│   │   └── types/        # TypeScript types
+│   └── vite.config.ts
+│
+├── docs/             # Detailed documentation
+├── nginx/            # Nginx configuration
+└── docker-compose.yml
 ```
 
-#### OAuth callback fails in production
-- Update Google Cloud Console with production URLs
-- Verify `FRONTEND_URL` in GitHub Secrets matches your VPS IP/domain
-- Check redirect URI: `http://YOUR_VPS_IP/api/auth/callback`
-- Ensure `CORS_ORIGINS` allows your frontend URL
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for complete structure details.
 
-## Git Ignore Recommendations
-- `backend/.env` - Contains secrets
-- `backend/__pycache__/` - Python cache
-- `backend/.venv/` or `backend/venv/` - Virtual environment
-- `frontend/node_modules/` - NPM dependencies
-- `frontend/dist/` - Build output
-- `.DS_Store` - macOS files
+## Configuration
 
-## Deployment & DevOps
-
-**📖 For Release Management:** See [docs/RELEASES.md](../docs/RELEASES.md) for complete guide on creating releases, semantic versioning, and rollback procedures.
-
-### Docker Configuration
-
-#### Backend Dockerfile
-- Multi-stage build for optimized image size
-- Stage 1: Install dependencies with build tools
-- Stage 2: Production runtime with minimal dependencies
-- Non-root user for security
-- Health check endpoint: `/health`
-- Runs on port 8000 with uvicorn
-
-#### Frontend Dockerfile
-- Multi-stage build: Node.js build + Nginx serve
-- Stage 1: Build Vue app with Vite
-- Stage 2: Serve static files with Nginx
-- Custom nginx.conf for Vue Router history mode
-- Gzip compression enabled
-- Static asset caching with immutable headers
-- Runs on port 80
-
-#### Docker Compose
-- **Services**:
-  - `backend`: FastAPI application
-  - `frontend`: Nginx serving Vue build
-  - `nginx`: Reverse proxy for both services
-- **Network**: Bridge network for inter-container communication
-- **Health Checks**: All services include health check definitions
-- **Volumes**: Nginx config and SSL certificates mounted
-- **Ports**:
-  - 80 (HTTP)
-  - 443 (HTTPS, when SSL configured)
-  - 8000 (Backend direct access)
-
-#### Nginx Reverse Proxy
-- Routes `/api/*` to backend container
-- Routes `/` to frontend container
-- Rate limiting:
-  - API: 10 requests/second
-  - Auth: 5 requests/minute
-- Security headers (X-Frame-Options, X-Content-Type-Options, X-XSS-Protection)
-- Gzip compression
-- Health check endpoint: `/health`
-- SSL/TLS ready (commented out, requires certificates)
-
-### CI/CD Pipeline
-
-#### GitHub Actions Workflow (`.github/workflows/deploy.yml`)
-
-**Triggers:**
-- **Tag Push**: `v*.*.*` (e.g., v1.0.0, v1.2.3) - Primary deployment method
-- **Manual**: workflow_dispatch - Emergency/manual deployments
-
-**Deployment Strategy:**
-- Automatic deployment ONLY on version tag creation
-- No auto-deploy on master branch pushes (prevents accidental production deploys)
-- Version extraction and Docker image tagging
-- Deployment history tracking in `.deployment-version` file
-- **Automatic GitHub Release creation** with changelog and download links
-
-**Steps**:
-1. **Checkout Code**: Clone repository
-2. **Setup SSH**: Configure SSH key from secrets
-3. **Create Deployment Directory**: Prepare VPS directory (`~/v3trading`)
-4. **Sync Files**: rsync code to VPS (excludes .git, node_modules, __pycache__, venv, .env)
-5. **Create .env**: Generate backend `.env` from GitHub Secrets (auto-includes CORS_ORIGINS from FRONTEND_URL)
-6. **Deploy**: Run `docker compose down && build --no-cache && up -d`
-7. **Verify**: Check service status with `docker compose ps`
-8. **Cleanup**: Remove SSH keys for security
-
-**Required GitHub Secrets**:
-- `VPS_HOST`: VPS IP address or hostname
-- `VPS_USERNAME`: SSH username
-- `VPS_SSH_KEY`: Private SSH key (full content)
-- `GOOGLE_CLIENT_ID`: Production Google OAuth Client ID
-- `GOOGLE_CLIENT_SECRET`: Production Google OAuth Secret
-- `JWT_SECRET_KEY`: Production JWT secret (min 32 characters)
-- `FRONTEND_URL`: Production frontend URL (e.g., https://yourdomain.com)
-
-**Environment Injection**:
-The workflow creates the `.env` file on the VPS during deployment from GitHub Secrets, ensuring secrets are never committed to the repository. `CORS_ORIGINS` is automatically set to match `FRONTEND_URL` value.
-
-**Setup Steps for Deployment**:
-
-1. **Prepare VPS:**
-```bash
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-# Install Docker Compose
-sudo apt-get update
-sudo apt-get install -y docker-compose-plugin
-
-# Add user to docker group (replace with your username)
-sudo usermod -aG docker $USER
-
-# Logout and login, or run:
-newgrp docker
-
-# Verify installation
-docker ps
-docker compose version
-
-# Configure firewall
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 22/tcp
+### Backend Environment Variables
+```env
+GOOGLE_CLIENT_ID=<your-client-id>
+GOOGLE_CLIENT_SECRET=<your-client-secret>
+JWT_SECRET_KEY=<min-32-character-secret>
+JWT_ALGORITHM=HS256
+FRONTEND_URL=http://localhost:5174
+CORS_ORIGINS=http://localhost:5174
 ```
 
-2. **Setup SSH Keys:**
+### Google OAuth Setup
+1. Create project in [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable Google+ API
+3. Create OAuth 2.0 credentials
+4. Add authorized origins: `http://localhost:5174`, `http://localhost:8000`
+5. Add redirect URI: `http://localhost:8000/api/auth/callback`
+
+See [AUTHENTICATION.md](docs/AUTHENTICATION.md) for complete setup guide.
+
+## Deployment
+
+### Release-Based Deployment
 ```bash
-# On your local machine (if you don't have SSH keys)
-ssh-keygen -t ed25519 -C "your_email@example.com"
-
-# Copy public key to VPS
-ssh-copy-id user@your_vps_ip
-
-# Copy private key content for GitHub Secrets
-cat ~/.ssh/id_ed25519
-```
-
-3. **Configure GitHub Secrets:**
-- Go to GitHub repo → Settings → Secrets and variables → Actions
-- Add all required secrets (see list above)
-- For `FRONTEND_URL` without domain: `http://YOUR_VPS_IP`
-
-4. **Update Google OAuth:**
-- Go to Google Cloud Console → Credentials
-- Add authorized JavaScript origin: `http://YOUR_VPS_IP`
-- Add authorized redirect URI: `http://YOUR_VPS_IP/api/auth/callback`
-
-5. **Create First Release:**
-```bash
-# Commit your code
-git add .
-git commit -m "Initial release"
-git push origin master
-
-# Create version tag to trigger deployment
-git tag -a v1.0.0 -m "Release v1.0.0 - Initial production release"
+# Create and push version tag to trigger deployment
+git tag -a v1.0.0 -m "Release v1.0.0"
 git push origin v1.0.0
 ```
 
-6. **Monitor Deployment:**
-- Go to GitHub → Actions tab
-- Watch the deployment workflow
-- Check for any errors in the logs
+GitHub Actions automatically:
+- Builds Docker images
+- Deploys to VPS
+- Creates GitHub release
+- Updates deployment version
 
-7. **Verify:**
-- Visit `http://YOUR_VPS_IP` in browser
-- Test Google OAuth login
-- Check API endpoints work
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) and [RELEASES.md](docs/RELEASES.md) for details.
 
-### Production Configuration
+## Development Guidelines
 
-#### Backend Environment Variables
-```env
-GOOGLE_CLIENT_ID=production-client-id
-GOOGLE_CLIENT_SECRET=production-secret
-JWT_SECRET_KEY=production-jwt-secret-min-32-chars
-JWT_ALGORITHM=HS256
-FRONTEND_URL=https://yourdomain.com
-CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-```
+### Code Standards
+- **Frontend**: Vue 3 Composition API, TypeScript, PrimeVue patterns
+- **Backend**: FastAPI best practices, Pydantic validation, type hints
+- **State**: Pinia stores for state management
+- **Styling**: Tailwind CSS + PrimeVue theming
+- **Preferences**: Store in localStorage via AppSettings
 
-#### CORS Configuration
-Updated `main.py` to read `CORS_ORIGINS` from environment:
-```python
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5174").split(",")
-```
+### Git Workflow
+- `master`: Production-ready code
+- Feature branches: `feature/feature-name`
+- Bug fixes: `fix/bug-description`
+- Never commit `.env` files
 
-This allows multiple origins for production (e.g., with/without www).
+### Key Principles
+- Follow existing component/layout structure
+- Use PrimeVue components when available
+- Test Docker builds before deployment
+- Update documentation when adding features
+- Use TypeScript for new files
 
-#### VPS Requirements
-- Ubuntu/Debian Linux (recommended)
-- Docker Engine installed
-- docker-compose installed
-- SSH access configured with public key authentication
-- Firewall configured (ports 80, 443 open)
-- Domain name pointed to VPS (optional, for SSL)
+## Troubleshooting
 
-#### SSL/TLS Configuration (Adding HTTPS)
+### Common Issues
 
-When you're ready to add a domain with HTTPS, follow these steps:
+**Backend won't start**
+- Check port 8000: `lsof -ti:8000`
+- Verify `.env` file exists
+- Check dependencies: `pip install -r requirements.txt`
 
-**1. Point Domain to VPS:**
-- Configure DNS A record: `yourdomain.com` → VPS IP
-- Configure DNS A record: `www.yourdomain.com` → VPS IP (optional)
-- Wait for DNS propagation (can take up to 48 hours)
+**Frontend won't connect**
+- Verify backend running on port 8000
+- Check proxy in `vite.config.ts`
+- Verify CORS in `backend/main.py`
 
-**2. Obtain SSL Certificates (Let's Encrypt):**
+**OAuth not working**
+- Verify credentials in `.env`
+- Check redirect URIs match exactly
+- Clear browser cookies
 
-SSH into your VPS and run:
-```bash
-# Install certbot
-sudo apt-get update
-sudo apt-get install -y certbot
+See [DEVELOPMENT.md](docs/DEVELOPMENT.md#troubleshooting) for more details.
 
-# Stop nginx temporarily (port 80 needs to be free)
-cd ~/v3trading
-docker compose stop nginx
+## Resources
 
-# Obtain certificates
-sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
+### Documentation
+- [Vue 3](https://vuejs.org/)
+- [PrimeVue](https://primevue.org/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Pinia](https://pinia.vuejs.org/)
 
-# Start nginx again
-docker compose start nginx
-```
-
-Certificates will be saved to: `/etc/letsencrypt/live/yourdomain.com/`
-
-**3. Update Docker Compose Volumes:**
-
-Edit `docker-compose.yml` to mount certificates:
-```yaml
-nginx:
-  volumes:
-    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    - /etc/letsencrypt:/etc/letsencrypt:ro  # Add this line
-```
-
-**4. Update Nginx Configuration:**
-
-Edit `nginx/nginx.conf` and uncomment/update the HTTPS server block:
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com www.yourdomain.com;
-
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
-
-    # ... (rest of location blocks same as HTTP)
-}
-
-# Redirect HTTP to HTTPS
-server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
-```
-
-**5. Update Backend Cookie Settings:**
-
-Edit `backend/app/routers/auth.py` line 78:
-```python
-redirect_response.set_cookie(
-    key="access_token",
-    value=access_token,
-    httponly=True,
-    secure=True,  # Change from False to True
-    samesite="lax",
-    max_age=60 * 60 * 24 * 7
-)
-```
-
-**6. Update GitHub Secrets:**
-```
-FRONTEND_URL=https://yourdomain.com
-```
-
-Note: `CORS_ORIGINS` will automatically be set to match.
-
-**7. Update Google OAuth Settings:**
-
-In Google Cloud Console, update:
-- Authorized JavaScript origins: `https://yourdomain.com`, `https://www.yourdomain.com`
-- Authorized redirect URIs: `https://yourdomain.com/api/auth/callback`
-
-**8. Deploy Changes:**
-```bash
-git add .
-git commit -m "Add HTTPS support"
-git push origin master
-```
-
-**9. Restart Services on VPS:**
-```bash
-cd ~/v3trading
-docker compose down
-docker compose up -d
-```
-
-**10. Setup Auto-Renewal:**
-
-Let's Encrypt certificates expire after 90 days. Setup auto-renewal:
-```bash
-# Test renewal process
-sudo certbot renew --dry-run
-
-# Add cron job for auto-renewal
-sudo crontab -e
-
-# Add this line (runs twice daily):
-0 0,12 * * * certbot renew --quiet --deploy-hook "cd /home/YOUR_USERNAME/v3trading && docker compose restart nginx"
-```
-
-**Verification:**
-- Visit `https://yourdomain.com` - should work with valid SSL
-- Visit `http://yourdomain.com` - should redirect to HTTPS
-- Test Google OAuth login with HTTPS
-- Check browser shows padlock icon (secure connection)
-
-### Deployment Workflow
-
-**Release-Based Deployment Process:**
-
-**Creating a Release:**
-```bash
-# 1. Ensure code is committed
-git add .
-git commit -m "Add new trading features"
-git push origin master
-
-# 2. Create version tag (triggers deployment)
-git tag -a v1.1.0 -m "Release v1.1.0 - New features"
-git push origin v1.1.0
-```
-
-**What Happens Automatically:**
-1. GitHub Actions detects tag push
-2. Extracts version number (e.g., `v1.1.0`)
-3. SSH connection established to VPS
-4. Code synced to VPS via rsync (to `~/v3trading`)
-5. `.env` file created from GitHub Secrets
-6. Version recorded in `.deployment-version` file
-7. Docker images rebuilt with `--no-cache` flag
-8. Images tagged with version number (`v3trading-backend:v1.1.0`)
-9. Services restarted with `docker compose up -d`
-10. Old untagged images pruned to save disk space
-11. Health checks verify deployment success
-12. **GitHub Release created automatically** with changelog, links, and downloads
-
-**Manual Deployment (Emergency):**
-- Go to GitHub → Actions → Deploy to VPS → Run workflow
-- Creates deployment tagged as `manual-YYYYMMDD-HHMMSS`
-
-**See [docs/RELEASES.md](../docs/RELEASES.md) for complete release management guide.**
-
-**Common Deployment Commands on VPS:**
-```bash
-# Check deployment status
-cd ~/v3trading
-docker compose ps
-
-# View logs
-docker compose logs -f
-docker compose logs backend
-docker compose logs frontend
-docker compose logs nginx
-
-# Restart services
-docker compose restart
-
-# Stop all services
-docker compose down
-
-# Rebuild and restart
-docker compose down
-docker compose build --no-cache
-docker compose up -d
-
-# Check resource usage
-docker stats
-
-# Clean up
-docker system prune -a
-```
-
-### Local Docker Testing (Optional)
-
-**Note:** Requires Docker Desktop installed on macOS/Windows or Docker Engine on Linux.
-
-```bash
-# From project root
-cd /path/to/v3trading
-
-# Create local .env file for testing
-cp backend/.env.example backend/.env
-# Edit backend/.env with your development credentials
-
-# Build and run
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Check service status
-docker compose ps
-
-# Restart specific service
-docker compose restart backend
-
-# Stop all services
-docker compose down
-
-# Rebuild specific service
-docker compose build --no-cache backend
-docker compose up -d backend
-```
-
-If you don't have Docker installed locally, you can skip local testing and deploy directly to VPS via GitHub Actions.
+### Project Links
+- API Docs (dev): http://localhost:8000/docs
+- Frontend (dev): http://localhost:5174
 
 ---
 
 **Last Updated**: October 8, 2025
 **Primary Developer**: David P. Brazda (davidbrazda61@gmail.com)
 
-**Development Guidelines**:
-- Always use Vue 3 Composition API
-- Follow PrimeVue component patterns and theming
-- Never commit `.env` files
-- Test Docker builds locally before pushing
-- Update documentation when adding features
-- Use TypeScript for new files (router migration pending)
-- Store user preferences in localStorage via AppSettings
-- Follow existing layout/component structure for consistency
-
-**Project Status**:
-- ✅ Core authentication system with Google OAuth
-- ✅ PrimeVue UI framework fully integrated
-- ✅ Dashboard with widgets and charts
-- ✅ Responsive layout system with theme customization
-- ✅ Mock trading API with CRUD operations
-- ✅ Docker deployment configuration
-- ✅ CI/CD pipeline with GitHub Actions
-- 🚧 Router TypeScript migration
-- 🚧 Real trading API integration
-- 🚧 Database persistence
-- 🚧 Production UI kit cleanup
+**Quick Navigation**:
+- 🚀 [Getting Started](docs/DEVELOPMENT.md)
+- 🏗️ [Architecture](docs/ARCHITECTURE.md)
+- 🔐 [Authentication](docs/AUTHENTICATION.md)
+- 📡 [API Reference](docs/API.md)
+- 🎨 [UI Framework](docs/UI_FRAMEWORK.md)
+- 🚢 [Deployment](docs/DEPLOYMENT.md)
+- 📦 [Releases](docs/RELEASES.md)
