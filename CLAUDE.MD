@@ -8,10 +8,14 @@ V3Trading is a full-stack trading application with a Vue 3 frontend and FastAPI 
 ### Frontend
 - **Framework**: Vue 3 with TypeScript
 - **Build Tool**: Vite
+- **UI Framework**: PrimeVue 4 with PrimeIcons
+- **Theming**: PrimeVue Themes (@primevue/themes)
 - **State Management**: Pinia (Composition API style)
 - **Router**: Vue Router 4
 - **HTTP Client**: Axios
-- **Port**: 5173
+- **Charts**: Chart.js 4
+- **CSS**: Tailwind CSS + Sass
+- **Port**: 5173 (development)
 
 ### Backend
 - **Framework**: FastAPI
@@ -57,11 +61,28 @@ v3trading/
 │
 └── frontend/
     ├── src/
+    │   ├── assets/                  # Static assets, styles, images
+    │   │   ├── demo/                # Demo data (flags, etc.)
+    │   │   └── layout/              # Layout styles and variables
     │   ├── components/              # Vue components
-    │   ├── composables/             # Composition functions
+    │   │   ├── dashboard/           # Dashboard widgets (Stats, RecentSales, etc.)
+    │   │   ├── landing/             # Landing page components (Hero, Features, etc.)
+    │   │   └── FloatingConfigurator.vue  # Theme configurator
+    │   ├── composables/             # Composition functions (currently empty)
+    │   ├── layout/                  # App layout components
+    │   │   ├── composables/         # Layout-specific composables
+    │   │   ├── AppLayout.vue        # Main layout wrapper
+    │   │   ├── AppTopbar.vue        # Top navigation bar
+    │   │   ├── AppSidebar.vue       # Sidebar navigation
+    │   │   ├── AppMenu.vue          # Main menu
+    │   │   ├── AppMenuItem.vue      # Menu item component
+    │   │   ├── AppFooter.vue        # Footer component
+    │   │   ├── AppConfigurator.vue  # Theme configuration panel
+    │   │   └── AppSettings.vue      # Settings management
     │   ├── router/
-    │   │   └── index.ts             # Router with auth guards
-    │   ├── services/
+    │   │   └── index.js             # Router with auth guards
+    │   ├── service/                 # Legacy demo services (Country, Customer, Node, Photo, Product)
+    │   ├── services/                # API services (current)
     │   │   ├── api.ts               # Axios instance with interceptors
     │   │   ├── authService.ts       # Auth API calls
     │   │   └── tradingService.ts    # Trading API calls
@@ -72,19 +93,77 @@ v3trading/
     │   │   ├── index.ts             # Common types (Trade, Position, etc.)
     │   │   └── auth.ts              # Auth types (User)
     │   ├── views/
+    │   │   ├── Dashboard.vue        # Main dashboard with widgets
     │   │   ├── HomeView.vue         # Landing page with login/user info
-    │   │   └── ApiTest.vue          # Protected API testing page
+    │   │   ├── ApiTest.vue          # Protected API testing page
+    │   │   ├── pages/               # Utility pages
+    │   │   │   ├── auth/            # Auth pages (Login, Register, Access, Error)
+    │   │   │   ├── Crud.vue         # CRUD demo page
+    │   │   │   ├── Documentation.vue # Documentation page
+    │   │   │   ├── Empty.vue        # Empty page template
+    │   │   │   ├── Landing.vue      # Marketing landing page
+    │   │   │   └── NotFound.vue     # 404 page
+    │   │   └── uikit/               # PrimeVue UI component demos
+    │   │       ├── ButtonDoc.vue    # Button components demo
+    │   │       ├── ChartDoc.vue     # Chart.js integration demo
+    │   │       ├── FileDoc.vue      # File upload demo
+    │   │       ├── FormLayout.vue   # Form layout examples
+    │   │       ├── InputDoc.vue     # Input components demo
+    │   │       ├── ListDoc.vue      # List components demo
+    │   │       ├── MediaDoc.vue     # Media components demo
+    │   │       ├── MenuDoc.vue      # Menu components demo
+    │   │       ├── MessagesDoc.vue  # Messages/toast demo
+    │   │       ├── MiscDoc.vue      # Misc components demo
+    │   │       ├── OverlayDoc.vue   # Overlay components demo
+    │   │       ├── PanelsDoc.vue    # Panel components demo
+    │   │       ├── TableDoc.vue     # DataTable demo
+    │   │       ├── TimelineDoc.vue  # Timeline demo
+    │   │       └── TreeDoc.vue      # Tree components demo
     │   ├── App.vue
     │   └── main.ts
     ├── vite.config.ts               # Vite config with proxy
     ├── tsconfig.json                # TypeScript config
+    ├── tailwind.config.js           # Tailwind CSS config
+    ├── postcss.config.js            # PostCSS config
     ├── package.json
     └── .env.example
 ```
 
 ## Features Implemented
 
-### 1. Authentication System
+### 1. UI/UX System
+
+#### PrimeVue Integration
+- **UI Framework**: PrimeVue 4 with full component library
+- **Theming**: Dynamic theme configuration with AppSettings
+- **Layout System**:
+  - Responsive AppLayout with sidebar navigation
+  - AppTopbar with user menu and notifications
+  - AppSidebar with collapsible menu
+  - AppFooter with customizable content
+  - AppSettings for user preferences (stored in localStorage)
+
+#### Dashboard
+- **Widgets**:
+  - StatsWidget: Key metrics display
+  - RevenueStreamWidget: Revenue visualization
+  - RecentSalesWidget: Recent transactions table
+  - BestSellingWidget: Top products/symbols
+  - NotificationsWidget: Activity feed
+- **Charts**: Chart.js integration for data visualization
+
+#### UI Kit Demos
+Complete PrimeVue component demonstrations in `/uikit/*`:
+- Button, Input, Form components
+- DataTable with sorting, filtering, pagination
+- Tree, List, Menu components
+- Overlay components (Dialog, Sidebar, etc.)
+- Media components (Image, Carousel, etc.)
+- Messages and Toast notifications
+- Charts and Timeline
+- File upload and handling
+
+### 2. Authentication System
 
 #### Google OAuth Flow
 - **Login Endpoint**: `/api/auth/google`
@@ -118,17 +197,26 @@ v3trading/
   - `login()`: Redirect to Google OAuth
   - `logout()`: Clear session and redirect
 
-- **Route Guards** (`router/index.ts`):
+- **Route Guards** (`router/index.js`):
   - Protected routes use `meta: { requiresAuth: true }`
   - Automatically fetch user if not loaded
-  - Redirect to home if not authenticated
+  - Redirect to login if not authenticated
+  - Navigation guard implemented in `beforeEach`
 
-- **HomeView**:
-  - Shows "Sign in with Google" button when not authenticated
-  - Displays user profile (picture, name, email) when authenticated
-  - Shows logout button and navigation to protected pages
+- **Authentication Pages**:
+  - Login (`/auth/login`): Standard login page
+  - LoginAlt (`/auth/login-alt`): Alternative login design
+  - Register (`/auth/register`): User registration
+  - Access (`/auth/access`): Access denied page
+  - Error (`/auth/error`): Error page
 
-### 2. Trading API (Mock Data)
+- **HomeView & Dashboard**:
+  - Dashboard is the default route (`/`)
+  - Shows dashboard widgets when authenticated
+  - Displays user profile in AppTopbar
+  - Landing page available at `/landing` for marketing
+
+### 3. Trading API (Mock Data)
 
 #### Data Models
 
@@ -180,7 +268,7 @@ v3trading/
 - **Positions**: 5 pre-generated positions
 - **Symbols**: AAPL, GOOGL, MSFT, TSLA, AMZN, NVDA, META, BTC, ETH, SPY
 
-### 3. Frontend Architecture
+### 4. Frontend Architecture
 
 #### Service Layer
 - **API Client** (`services/api.ts`):
@@ -263,16 +351,27 @@ npm run dev
 
 ## User Flow
 
-1. User visits http://localhost:5174/
-2. Sees "Sign in with Google" button if not authenticated
-3. Clicks button → redirects to Google OAuth
+1. User visits http://localhost:5174/ (or configured port)
+2. If not authenticated, redirected to `/auth/login`
+3. Clicks "Sign in with Google" → redirects to Google OAuth
 4. Authenticates with Google account
 5. Redirects back to frontend with httpOnly cookie containing JWT
-6. Frontend fetches user info and displays profile
-7. User can access "Test API Integration" button
-8. Clicking button navigates to `/api-test` (protected route)
-9. API test page shows trades and positions with full CRUD operations
-10. User can logout, which clears cookie and returns to login screen
+6. Frontend fetches user info and displays dashboard
+7. Dashboard shows widgets with trading stats, charts, and activity
+8. User profile appears in AppTopbar with dropdown menu
+9. Sidebar navigation provides access to:
+   - Dashboard (home)
+   - UI Kit demos (for development reference)
+   - CRUD operations
+   - Documentation
+   - Empty page template
+10. User can access API test page for trading operations
+11. User can logout, which clears cookie and returns to login screen
+
+### Alternative Flows
+- **Landing Page**: `/landing` - Marketing/public landing page
+- **Direct Routes**: Login, Register, Error pages accessible without layout
+- **404 Handling**: NotFound page for invalid routes
 
 ## Development Notes
 
@@ -290,27 +389,43 @@ npm run dev
 ### TypeScript
 - Frontend is fully typed with TypeScript
 - Type definitions in `src/types/`
+- Router is JavaScript (`index.js`) but can be migrated to TypeScript
 - Backend uses Pydantic for type validation
+
+### UI Framework
+- PrimeVue 4 provides comprehensive component library
+- Auto-import resolver for components
+- Theme customization via AppConfigurator
+- Responsive design with PrimeVue layout system
+- Legacy demo services in `src/service/` for UI kit examples
 
 ### CORS
 - Currently configured for localhost development
-- Origin: `http://localhost:5174`
+- Default origin: `http://localhost:5174` (configurable via env)
 - Credentials enabled for cookie support
+- Production: Configured via `CORS_ORIGINS` environment variable
+
+### Port Configuration
+- Documentation references port 5174
+- Default Vite dev server port is typically 5173
+- Configurable in `vite.config.ts`
+- Backend always runs on port 8000
 
 ## Future Enhancements (Not Yet Implemented)
-- Database integration (PostgreSQL/MongoDB)
-- Real trading API integration
+- Database integration (PostgreSQL/MongoDB) - currently uses in-memory mock storage
+- Real trading API integration - currently uses mock data generators
 - WebSocket for real-time price updates
 - Order book visualization
-- Portfolio analytics
-- Trade history charts
+- Advanced portfolio analytics
+- Trade history charts and reporting
 - Multi-factor authentication
-- API rate limiting
-- Production deployment configuration
-- Environment-specific builds
-- User settings/preferences
+- API rate limiting (partial implementation in nginx)
+- User settings/preferences persistence (AppSettings uses localStorage only)
 - Email notifications
 - Trading strategies/bots
+- Migration of router to TypeScript
+- Integration of custom trading components into Dashboard
+- Remove/archive legacy UI kit demo pages for production
 
 ## API Response Examples
 
@@ -836,11 +951,28 @@ If you don't have Docker installed locally, you can skip local testing and deplo
 
 ---
 
-**Last Updated**: October 1, 2025
+**Last Updated**: October 8, 2025
 **Primary Developer**: David P. Brazda (davidbrazda61@gmail.com)
 
 **Development Guidelines**:
 - Always use Vue 3 Composition API
+- Follow PrimeVue component patterns and theming
 - Never commit `.env` files
 - Test Docker builds locally before pushing
 - Update documentation when adding features
+- Use TypeScript for new files (router migration pending)
+- Store user preferences in localStorage via AppSettings
+- Follow existing layout/component structure for consistency
+
+**Project Status**:
+- ✅ Core authentication system with Google OAuth
+- ✅ PrimeVue UI framework fully integrated
+- ✅ Dashboard with widgets and charts
+- ✅ Responsive layout system with theme customization
+- ✅ Mock trading API with CRUD operations
+- ✅ Docker deployment configuration
+- ✅ CI/CD pipeline with GitHub Actions
+- 🚧 Router TypeScript migration
+- 🚧 Real trading API integration
+- 🚧 Database persistence
+- 🚧 Production UI kit cleanup
