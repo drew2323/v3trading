@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick, shallowRef, computed } from 'vue'
 import { useLayout } from '@/layout/composables/layout'
+import Button from 'primevue/button'
+import Dropdown from 'primevue/dropdown'
 import {
   createChart,
   type IChartApi,
@@ -618,21 +620,24 @@ defineExpose({
               <span class="legend-value">{{ formatLegendValue(data.value, data.type) }}</span>
             </div>
             <div v-if="showLegendControls" class="legend-controls">
-              <button 
-                @click="toggleSeriesVisibility(String(seriesId))" 
-                class="legend-btn"
-                :class="{ 'hidden': !seriesVisibility[String(seriesId)] }"
+              <Button
+                @click="toggleSeriesVisibility(String(seriesId))"
+                :icon="seriesVisibility[String(seriesId)] ? 'pi pi-eye' : 'pi pi-eye-slash'"
                 :title="seriesVisibility[String(seriesId)] ? 'Hide series' : 'Show series'"
-              >
-                <i :class="['pi', seriesVisibility[String(seriesId)] ? 'pi-eye' : 'pi-eye-slash']"></i>
-              </button>
-              <button 
-                @click="handleRemoveSeries(String(seriesId))" 
-                class="legend-btn remove-btn"
+                text
+                rounded
+                size="small"
+                :class="{ 'opacity-50': !seriesVisibility[String(seriesId)] }"
+              />
+              <Button
+                @click="handleRemoveSeries(String(seriesId))"
+                icon="pi pi-times"
                 title="Remove series"
-              >
-                <i class="pi pi-times"></i>
-              </button>
+                text
+                rounded
+                size="small"
+                severity="danger"
+              />
             </div>
           </div>
         </div>
@@ -651,41 +656,59 @@ defineExpose({
           </div>
           <div class="series-actions">
             <div v-if="showPaneControls && availablePanes.length > 1" class="pane-controls">
-              <select 
-                :value="s.paneIndex ?? 0" 
-                @change="moveSeriesTo(s.id, Number(($event.target as HTMLSelectElement).value))"
-                class="pane-select"
-                title="Move to pane"
-              >
-                <option v-for="pane in availablePanes" :key="pane.index" :value="pane.index">
-                  {{ pane.name }}
-                </option>
-              </select>
+              <Dropdown
+                :modelValue="s.paneIndex ?? 0"
+                @update:modelValue="moveSeriesTo(s.id, $event)"
+                :options="availablePanes"
+                optionLabel="name"
+                optionValue="index"
+                placeholder="Move to pane"
+                class="pane-dropdown"
+              />
             </div>
-            <button @click="toggleSeriesVisibility(s.id)" class="action-btn" :title="seriesVisibility[s.id] ? 'Hide' : 'Show'">
-              <i :class="['pi', seriesVisibility[s.id] ? 'pi-eye' : 'pi-eye-slash']"></i>
-            </button>
-            <button @click="handleShowMarkerModal(s.id)" class="action-btn marker-btn" title="Add Markers">
-              <i class="pi pi-map-marker"></i>
-            </button>
-            <button 
+            <Button
+              @click="toggleSeriesVisibility(s.id)"
+              :icon="seriesVisibility[s.id] ? 'pi pi-eye' : 'pi pi-eye-slash'"
+              :title="seriesVisibility[s.id] ? 'Hide' : 'Show'"
+              text
+              rounded
+              size="small"
+            />
+            <Button
+              @click="handleShowMarkerModal(s.id)"
+              icon="pi pi-map-marker"
+              title="Add Markers"
+              text
+              rounded
+              size="small"
+              severity="info"
+            />
+            <Button
               v-if="getSeriesMarkers(s.id).length > 0"
-              @click="clearMarkers(s.id)" 
-              class="action-btn clear-markers-btn" 
+              @click="clearMarkers(s.id)"
+              icon="pi pi-trash"
               title="Clear Markers"
-            >
-              <i class="pi pi-trash"></i>
-            </button>
-            <button @click="handleRemoveSeries(s.id)" class="action-btn remove-btn" title="Remove">
-              <i class="pi pi-times"></i>
-            </button>
+              text
+              rounded
+              size="small"
+              severity="warning"
+            />
+            <Button
+              @click="handleRemoveSeries(s.id)"
+              icon="pi pi-times"
+              title="Remove"
+              text
+              rounded
+              size="small"
+              severity="danger"
+            />
           </div>
         </li>
       </ul>
     </div>
     
     <!-- Marker Overlay -->
-    <div 
+    <div
       v-if="markerOverlay.visible && markerOverlay.marker"
       class="marker-overlay"
       :style="{ left: markerOverlay.x + 'px', top: markerOverlay.y + 'px' }"
@@ -693,9 +716,13 @@ defineExpose({
       <div class="marker-overlay-content">
         <div class="marker-overlay-header">
           <span class="marker-text">{{ markerOverlay.marker?.text || '' }}</span>
-          <button @click="hideMarkerOverlay" class="overlay-close-btn">
-            <i class="pi pi-times"></i>
-          </button>
+          <Button
+            @click="hideMarkerOverlay"
+            icon="pi pi-times"
+            text
+            rounded
+            size="small"
+          />
         </div>
         <div class="marker-overlay-details">
           {{ markerOverlay.marker?.details || '' }}
@@ -707,17 +734,26 @@ defineExpose({
       <h4 class="pane-title">Pane Management</h4>
       <div class="pane-controls-section">
         <div class="pane-actions">
-          <button @click="createPane('New Pane')" class="action-btn create-pane-btn" title="Add New Pane">
-            <i class="pi pi-plus"></i>
-            Add Pane
-          </button>
+          <Button
+            @click="createPane('New Pane')"
+            icon="pi pi-plus"
+            label="Add Pane"
+            title="Add New Pane"
+            size="small"
+          />
         </div>
         <ul class="pane-list" v-if="availablePanes.length > 1">
           <li v-for="pane in availablePanes.filter(p => p.index !== 0)" :key="pane.index" class="pane-item">
             <span class="pane-name">{{ pane.name }}</span>
-            <button @click="removePane(pane.index)" class="action-btn remove-btn" title="Remove Pane">
-              <i class="pi pi-times"></i>
-            </button>
+            <Button
+              @click="removePane(pane.index)"
+              icon="pi pi-times"
+              title="Remove Pane"
+              text
+              rounded
+              size="small"
+              severity="danger"
+            />
           </li>
         </ul>
       </div>
@@ -843,42 +879,6 @@ defineExpose({
   opacity: 1;
 }
 
-.legend-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-color-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  font-size: 0.75rem;
-  width: 20px;
-  height: 20px;
-  pointer-events: auto;
-}
-
-.legend-btn:hover {
-  cursor: pointer !important;
-  background-color: var(--surface-100);
-  color: var(--text-color);
-}
-
-.legend-btn.hidden {
-  opacity: 0.5;
-}
-
-.legend-btn.remove-btn:hover {
-  background-color: var(--red-100);
-  color: var(--red-600);
-}
-
-.legend-btn i {
-  font-size: 0.7rem;
-}
-
 .series-manager {
   margin-top: 1.5rem;
   padding-top: 1rem;
@@ -935,13 +935,11 @@ defineExpose({
 }
 
 .series-name {
-  font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-color);
 }
 
 .series-type {
-  font-size: 0.75rem;
   color: var(--text-color-secondary);
   background: var(--surface-100);
   padding: 0.2rem 0.6rem;
@@ -952,43 +950,10 @@ defineExpose({
 .series-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.action-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-color-secondary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: var(--border-radius);
-  display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  background: var(--surface-100);
-  color: var(--text-color);
-}
-
-.action-btn.remove-btn:hover {
-  background: var(--red-100);
-  color: var(--red-600);
-}
-
-.action-btn.marker-btn:hover {
-  background: var(--blue-100);
-  color: var(--blue-600);
-}
-
-.action-btn.clear-markers-btn:hover {
-  background: var(--yellow-100);
-  color: var(--yellow-600);
 }
 
 .series-pane {
-  font-size: 0.7rem;
   color: var(--text-color-secondary);
   background: var(--surface-100);
   padding: 0.1rem 0.4rem;
@@ -1000,25 +965,8 @@ defineExpose({
   margin-right: 0.5rem;
 }
 
-.pane-select {
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--surface-border);
-  border-radius: var(--border-radius);
-  font-size: 0.75rem;
-  color: var(--text-color);
-  background: var(--surface-0);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.pane-select:hover {
-  border-color: var(--primary-color);
-}
-
-.pane-select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px var(--primary-color-10);
+.pane-dropdown {
+  min-width: 120px;
 }
 
 .pane-manager {
@@ -1045,25 +993,6 @@ defineExpose({
 .pane-actions {
   display: flex;
   gap: 0.5rem;
-}
-
-.create-pane-btn {
-  background: var(--primary-color);
-  color: var(--primary-color-text);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-}
-
-.create-pane-btn:hover {
-  background: var(--primary-600);
 }
 
 .pane-list {
@@ -1125,25 +1054,6 @@ defineExpose({
   font-weight: 600;
   color: var(--text-color);
   font-size: 0.875rem;
-}
-
-.overlay-close-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-color-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-}
-
-.overlay-close-btn:hover {
-  background: var(--surface-100);
-  color: var(--text-color);
 }
 
 .marker-overlay-details {

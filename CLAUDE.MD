@@ -12,7 +12,7 @@ V3Trading is a full-stack trading application with a Vue 3 frontend and FastAPI 
 - **State Management**: Pinia (Composition API style)
 - **Router**: Vue Router 4
 - **HTTP Client**: Axios
-- **Charts**: Chart.js 4
+- **Charts**: Chart.js, Lightweigth Charts - always use latest version
 - **CSS**: Tailwind CSS + Sass
 - **Port**: 5173 (development)
 
