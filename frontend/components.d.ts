@@ -17,9 +17,7 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     Drawer: typeof import('primevue/drawer')['default']
     FeaturesWidget: typeof import('./src/components/landing/FeaturesWidget.vue')['default']
-    FileUpload: typeof import('primevue/fileupload')['default']
     FloatingConfigurator: typeof import('./src/components/FloatingConfigurator.vue')['default']
-    Fluid: typeof import('primevue/fluid')['default']
     FooterWidget: typeof import('./src/components/landing/FooterWidget.vue')['default']
     HeroWidget: typeof import('./src/components/landing/HeroWidget.vue')['default']
     HighlightsWidget: typeof import('./src/components/landing/HighlightsWidget.vue')['default']
@@ -28,7 +26,6 @@ declare module 'vue' {
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
     Menu: typeof import('primevue/menu')['default']
-    Message: typeof import('primevue/message')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     NotificationsWidget: typeof import('./src/components/dashboard/NotificationsWidget.vue')['default']
     PricingWidget: typeof import('./src/components/landing/PricingWidget.vue')['default']
@@ -47,8 +44,6 @@ declare module 'vue' {
     Toast: typeof import('primevue/toast')['default']
     ToggleButton: typeof import('primevue/togglebutton')['default']
     TopbarWidget: typeof import('./src/components/landing/TopbarWidget.vue')['default']
-    Tree: typeof import('primevue/tree')['default']
-    TreeTable: typeof import('primevue/treetable')['default']
   }
   export interface GlobalDirectives {
     StyleClass: typeof import('primevue/styleclass')['default']
