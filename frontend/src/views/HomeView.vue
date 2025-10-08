@@ -1,3 +1,4 @@
+  <!-- Pohrobek - move away -->
 <template>
   <div class="home">
     <h1>Welcome to V3Trading</h1>
