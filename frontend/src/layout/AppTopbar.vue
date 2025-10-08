@@ -34,7 +34,7 @@ function handleLogin() {
                 <i class="pi pi-bars"></i>
             </button>
             <router-link to="/" class="layout-topbar-logo">
-                <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         fill-rule="evenodd"
                         clip-rule="evenodd"
@@ -52,7 +52,7 @@ function handleLogin() {
                     </g>
                 </svg>
 
-                <span>SAKAI</span>
+                <span>V3Trading</span>
             </router-link>
         </div>
 
