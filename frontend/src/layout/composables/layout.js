@@ -1,6 +1,8 @@
-import { computed, reactive } from 'vue';
+import { computed, reactive, watch } from 'vue';
 
-const layoutConfig = reactive({
+const STORAGE_KEY = 'v3trading-layout-settings';
+
+const defaultConfig = {
     preset: 'Aura',
     primary: 'emerald',
     surface: null,
@@ -9,7 +11,51 @@ const layoutConfig = reactive({
     menuTheme: 'dark',
     colorScheme: 'light',
     cardStyle: 'filled'
-});
+};
+
+// Load settings from localStorage or use defaults
+const loadSettings = () => {
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            return { ...defaultConfig, ...parsed };
+        }
+    } catch (error) {
+        console.error('Error loading settings from localStorage:', error);
+    }
+    return { ...defaultConfig };
+};
+
+// Save settings to localStorage
+const saveSettings = (config) => {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch (error) {
+        console.error('Error saving settings to localStorage:', error);
+    }
+};
+
+const layoutConfig = reactive(loadSettings());
+
+// Apply dark theme class if needed on load
+if (layoutConfig.darkTheme) {
+    document.documentElement.classList.add('app-dark');
+}
+
+// Watch for changes and save to localStorage
+let saveTimeout;
+watch(
+    layoutConfig,
+    (newConfig) => {
+        // Debounce saves to avoid excessive writes
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveSettings(newConfig);
+        }, 300);
+    },
+    { deep: true }
+);
 
 const layoutState = reactive({
     staticMenuDesktopInactive: false,
@@ -34,7 +80,7 @@ export function useLayout() {
             return;
         }
 
-        document.startViewTransition(() => executeDarkModeToggle(event));
+        document.startViewTransition(() => executeDarkModeToggle());
     };
 
     const executeDarkModeToggle = () => {
