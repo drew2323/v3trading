@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const initialized = ref(false)
 
   // Computed
   const isAuthenticated = computed(() => user.value !== null)
@@ -26,6 +27,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
     } finally {
       loading.value = false
+      initialized.value = true
     }
   }
 
@@ -56,6 +58,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     loading,
     error,
+    initialized,
 
     // Computed
     isAuthenticated,

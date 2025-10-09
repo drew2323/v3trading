@@ -59,6 +59,12 @@ docker compose up -d
 
 ## Key Features
 
+### Reminders
+- always use Primevue components, so it will work with switching the Theme internally
+- search for available Primevue components
+- if exra styling is needed, use Theme variables
+- use Toast service if necessary
+
 ### ✅ Implemented
 - Google OAuth authentication with JWT
 - PrimeVue UI framework with dynamic theming

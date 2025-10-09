@@ -8,6 +8,7 @@ const router = createRouter({
         {
             path: '/',
             component: AppLayout,
+            meta: { requiresAuth: true },
             children: [
                 {
                     path: '/',
@@ -157,8 +158,8 @@ router.beforeEach(async (to, from, next) => {
 
     // Check if route requires authentication
     if (to.meta.requiresAuth) {
-        // Fetch user if not already loaded
-        if (authStore.user === null && !authStore.loading) {
+        // Wait for initial auth check to complete
+        if (!authStore.initialized) {
             await authStore.fetchUser();
         }
 
