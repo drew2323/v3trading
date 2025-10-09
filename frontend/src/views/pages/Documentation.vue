@@ -116,7 +116,7 @@ import AppLayout from './AppLayout.vue';
             <span class="bg-highlight px-2 py-1 rounded-border not-italic text-base">src/layout/composables/layout.js</span>. Then remove this line:
         </p>
         <pre class="app-code">
-<code>import { useLayout } from '@/layout/composables/layout';</code></pre>
+<code>import { useLayoutStore } from '@/stores/layoutStore';</code></pre>
 
         <p class="text-lg mb-4">As a final step, copy the following folders:</p>
         <ul class="leading-normal list-disc pl-8 text-lg mb-4">

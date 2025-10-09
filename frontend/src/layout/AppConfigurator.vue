@@ -1,23 +1,29 @@
 <script setup>
 // this is popdown settings menu (pallette icon), with less options.
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { $t, updatePreset, updateSurfacePalette } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import Lara from '@primeuix/themes/lara';
 import Nora from '@primeuix/themes/nora';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-const { layoutConfig, isDarkTheme } = useLayout();
+const layoutStore = useLayoutStore();
 
 const presets = {
     Aura,
     Lara,
     Nora
 };
-const preset = ref(layoutConfig.preset);
+const preset = computed({
+    get: () => layoutStore.layoutConfig.preset,
+    set: (val) => layoutStore.updatePreset(val)
+});
 const presetOptions = ref(Object.keys(presets));
 
-const menuMode = ref(layoutConfig.menuMode);
+const menuMode = computed({
+    get: () => layoutStore.layoutConfig.menuMode,
+    set: (val) => layoutStore.updateMenuMode(val)
+});
 const menuModeOptions = ref([
     { label: 'Static', value: 'static' },
     { label: 'Overlay', value: 'overlay' }
@@ -79,7 +85,7 @@ const surfaces = ref([
 ]);
 
 function getPresetExt() {
-    const color = primaryColors.value.find((c) => c.name === layoutConfig.primary);
+    const color = primaryColors.value.find((c) => c.name === layoutStore.layoutConfig.primary);
 
     if (color.name === 'noir') {
         return {
@@ -170,9 +176,9 @@ function getPresetExt() {
 
 function updateColors(type, color) {
     if (type === 'primary') {
-        layoutConfig.primary = color.name;
+        layoutStore.updatePrimary(color.name);
     } else if (type === 'surface') {
-        layoutConfig.surface = color.name;
+        layoutStore.updateSurface(color.name);
     }
 
     applyTheme(type, color);
@@ -187,15 +193,14 @@ function applyTheme(type, color) {
 }
 
 function onPresetChange() {
-    layoutConfig.preset = preset.value;
     const presetValue = presets[preset.value];
-    const surfacePalette = surfaces.value.find((s) => s.name === layoutConfig.surface)?.palette;
+    const surfacePalette = surfaces.value.find((s) => s.name === layoutStore.layoutConfig.surface)?.palette;
 
     $t().preset(presetValue).preset(getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
 }
 
 function onMenuModeChange() {
-    layoutConfig.menuMode = menuMode.value;
+    // No need - computed setter handles this
 }
 </script>
 
@@ -213,7 +218,7 @@ function onMenuModeChange() {
                         type="button"
                         :title="primaryColor.name"
                         @click="updateColors('primary', primaryColor)"
-                        :class="['border-none w-5 h-5 rounded-full p-0 cursor-pointer outline-none outline-offset-1', { 'outline-primary': layoutConfig.primary === primaryColor.name }]"
+                        :class="['border-none w-5 h-5 rounded-full p-0 cursor-pointer outline-none outline-offset-1', { 'outline-primary': layoutStore.layoutConfig.primary === primaryColor.name }]"
                         :style="{ backgroundColor: `${primaryColor.name === 'noir' ? 'var(--text-color)' : primaryColor.palette['500']}` }"
                     ></button>
                 </div>
@@ -229,7 +234,7 @@ function onMenuModeChange() {
                         @click="updateColors('surface', surface)"
                         :class="[
                             'border-none w-5 h-5 rounded-full p-0 cursor-pointer outline-none outline-offset-1',
-                            { 'outline-primary': layoutConfig.surface ? layoutConfig.surface === surface.name : isDarkTheme ? surface.name === 'zinc' : surface.name === 'slate' }
+                            { 'outline-primary': layoutStore.layoutConfig.surface ? layoutStore.layoutConfig.surface === surface.name : layoutStore.isDarkTheme ? surface.name === 'zinc' : surface.name === 'slate' }
                         ]"
                         :style="{ backgroundColor: `${surface.palette['500']}` }"
                     ></button>

@@ -1,8 +1,8 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { onMounted, ref, watch } from 'vue';
 
-const { getPrimary, getSurface, isDarkTheme } = useLayout();
+const layoutStore = useLayoutStore();
 const lineData = ref(null);
 const pieData = ref(null);
 const polarData = ref(null);
@@ -219,7 +219,7 @@ function setColorOptions() {
 }
 
 watch(
-    [getPrimary, getSurface, isDarkTheme],
+    [() => layoutStore.getPrimary, () => layoutStore.getSurface, () => layoutStore.isDarkTheme],
     () => {
         setColorOptions();
     },

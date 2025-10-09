@@ -1,12 +1,12 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { $t, updatePreset, updateSurfacePalette } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import Lara from '@primeuix/themes/lara';
 import Nora from '@primeuix/themes/nora';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-const { layoutConfig, layoutState, isDarkTheme, toggleDarkMode } = useLayout();
+const layoutStore = useLayoutStore();
 
 const settingsVisible = ref(false);
 
@@ -15,19 +15,36 @@ const presets = {
     Lara,
     Nora
 };
-const preset = ref(layoutConfig.preset);
+
+// Computed refs for bidirectional binding
+const preset = computed({
+    get: () => layoutStore.layoutConfig.preset,
+    set: (val) => layoutStore.updatePreset(val)
+});
 const presetOptions = ref(['Aura', 'Lara', 'Nora']);
 
-const colorScheme = ref(isDarkTheme.value ? 'Dark' : 'Light');
+const colorScheme = computed({
+    get: () => layoutStore.colorSchemeDisplay,
+    set: (val) => layoutStore.updateDarkTheme(val === 'Dark')
+});
 const colorSchemeOptions = ref(['Light', 'Dark']);
 
-const cardStyle = ref(layoutConfig.cardStyle || 'filled');
+const cardStyle = computed({
+    get: () => layoutStore.layoutConfig.cardStyle.charAt(0).toUpperCase() + layoutStore.layoutConfig.cardStyle.slice(1),
+    set: (val) => layoutStore.updateCardStyle(val)
+});
 const cardStyleOptions = ref(['Transparent', 'Filled']);
 
-const menuTheme = ref(layoutConfig.menuTheme || 'dark');
+const menuTheme = computed({
+    get: () => layoutStore.layoutConfig.menuTheme.charAt(0).toUpperCase() + layoutStore.layoutConfig.menuTheme.slice(1),
+    set: (val) => layoutStore.updateMenuTheme(val)
+});
 const menuThemeOptions = ref(['Dark', 'Primary']);
 
-const menuType = ref(layoutConfig.menuMode);
+const menuType = computed({
+    get: () => layoutStore.layoutConfig.menuMode,
+    set: (val) => layoutStore.updateMenuMode(val)
+});
 
 const primaryColors = ref([
     { name: 'noir', palette: {}, color: 'var(--text-color)' },
@@ -65,7 +82,7 @@ function showSettings() {
 }
 
 function getPresetExt() {
-    const color = primaryColors.value.find((c) => c.name === layoutConfig.primary);
+    const color = primaryColors.value.find((c) => c.name === layoutStore.layoutConfig.primary);
 
     if (color.name === 'noir') {
         return {
@@ -156,9 +173,9 @@ function getPresetExt() {
 
 function updateColors(type, color) {
     if (type === 'primary') {
-        layoutConfig.primary = color.name;
+        layoutStore.updatePrimary(color.name);
     } else if (type === 'surface') {
-        layoutConfig.surface = color.name;
+        layoutStore.updateSurface(color.name);
     }
 
     applyTheme(type, color);
@@ -174,50 +191,30 @@ function applyTheme(type, color) {
 
 function onPresetChange(event) {
     const presetName = event.value;
-    preset.value = presetName;
-    layoutConfig.preset = presetName;
+    layoutStore.updatePreset(presetName);
     const presetValue = presets[presetName];
-    const surfacePalette = surfaces.value.find((s) => s.name === layoutConfig.surface)?.palette;
+    const surfacePalette = surfaces.value.find((s) => s.name === layoutStore.layoutConfig.surface)?.palette;
 
     $t().preset(presetValue).preset(getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
 }
 
 function onColorSchemeChange(event) {
     const scheme = event.value;
-    colorScheme.value = scheme;
-    layoutConfig.colorScheme = scheme;
-    
-    if (scheme === 'Dark' && !isDarkTheme.value) {
-        toggleDarkMode();
-    } else if (scheme === 'Light' && isDarkTheme.value) {
-        toggleDarkMode();
-    }
+    layoutStore.updateDarkTheme(scheme === 'Dark');
 }
 
 function onCardStyleChange(event) {
     const style = event.value;
-    cardStyle.value = style;
-    layoutConfig.cardStyle = style.toLowerCase();
+    layoutStore.updateCardStyle(style);
 }
 
 function onMenuThemeChange(event) {
     const theme = event.value;
-    menuTheme.value = theme;
-    layoutConfig.menuTheme = theme.toLowerCase();
+    layoutStore.updateMenuTheme(theme);
 }
 
 function onMenuTypeChange(newValue) {
-    console.log('Menu type changing to:', newValue);
-    menuType.value = newValue;
-    layoutConfig.menuMode = newValue;
-    
-    // Reset active states when changing menu mode
-    layoutState.overlayMenuActive = false;
-    layoutState.staticMenuMobileActive = false;
-    layoutState.sidebarActive = false;
-    layoutState.staticMenuDesktopInactive = false;
-    
-    console.log('Layout config updated:', layoutConfig.menuMode);
+    layoutStore.updateMenuMode(newValue);
 }
 
 // Expose showSettings method for parent component
@@ -256,7 +253,7 @@ defineExpose({
                         class="w-6 h-6 cursor-pointer hover:shadow-lg rounded duration-150 flex items-center justify-center"
                         :style="{ backgroundColor: primaryColor.color }"
                     >
-                        <i v-if="layoutConfig.primary === primaryColor.name" class="pi pi-check text-white"></i>
+                        <i v-if="layoutStore.layoutConfig.primary === primaryColor.name" class="pi pi-check text-white"></i>
                     </button>
                 </div>
             </div>
@@ -274,7 +271,7 @@ defineExpose({
                         class="w-6 h-6 cursor-pointer hover:shadow-lg rounded duration-150 flex items-center justify-center"
                         :style="{ backgroundColor: surface.palette['500'] }"
                     >
-                        <i v-if="layoutConfig.surface ? layoutConfig.surface === surface.name : isDarkTheme ? surface.name === 'zinc' : surface.name === 'slate'" class="pi pi-check text-white"></i>
+                        <i v-if="layoutStore.layoutConfig.surface ? layoutStore.layoutConfig.surface === surface.name : layoutStore.isDarkTheme ? surface.name === 'zinc' : surface.name === 'slate'" class="pi pi-check text-white"></i>
                     </button>
                 </div>
             </div>

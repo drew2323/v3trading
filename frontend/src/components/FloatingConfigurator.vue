@@ -1,13 +1,13 @@
 <script setup>
 import AppConfigurator from '@/layout/AppConfigurator.vue';
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 
-const { toggleDarkMode, isDarkTheme } = useLayout();
+const layoutStore = useLayoutStore();
 </script>
 
 <template>
     <div class="fixed flex gap-4 top-8 right-8">
-        <Button type="button" @click="toggleDarkMode" rounded :icon="isDarkTheme ? 'pi pi-moon' : 'pi pi-sun'" severity="secondary" />
+        <Button type="button" @click="layoutStore.toggleDarkMode" rounded :icon="layoutStore.isDarkTheme ? 'pi pi-moon' : 'pi pi-sun'" severity="secondary" />
         <div class="relative">
             <Button
                 icon="pi pi-palette"

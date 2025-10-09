@@ -64,6 +64,8 @@ docker compose up -d
 - search for available Primevue components
 - if exra styling is needed, use Theme variables
 - use Toast service if necessary
+- keep frontend compact and information dense, yet professional looking
+- dont verify that build works, i will do it myself
 
 ### ✅ Implemented
 - Google OAuth authentication with JWT
@@ -154,9 +156,9 @@ See [DEPLOYMENT.md](docs/DEPLOYMENT.md) and [RELEASES.md](docs/RELEASES.md) for 
 ### Code Standards
 - **Frontend**: Vue 3 Composition API, TypeScript, PrimeVue patterns
 - **Backend**: FastAPI best practices, Pydantic validation, type hints
-- **State**: Pinia stores for state management
+- **State**: Pinia stores for state management (layoutStore, authStore, tradingStore)
 - **Styling**: Tailwind CSS + PrimeVue theming
-- **Preferences**: Store in localStorage via AppSettings
+- **Preferences**: Managed by layoutStore with automatic localStorage persistence
 
 ### Git Workflow
 - `master`: Production-ready code

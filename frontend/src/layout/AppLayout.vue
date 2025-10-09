@@ -1,5 +1,5 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { useAuthStore } from '@/stores/authStore';
 import { computed, ref, watch, onMounted } from 'vue';
 import AppFooter from './AppFooter.vue';
@@ -7,7 +7,7 @@ import AppMenu from './AppMenu.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
 
-const { layoutConfig, layoutState, isSidebarActive } = useLayout();
+const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
 
 // Fetch user on mount to check authentication status
@@ -22,7 +22,7 @@ onMounted(async () => {
 
 const outsideClickListener = ref(null);
 
-watch(isSidebarActive, (newVal) => {
+watch(() => layoutStore.isSidebarActive, (newVal) => {
     if (newVal) {
         bindOutsideClickListener();
     } else {
@@ -33,24 +33,24 @@ watch(isSidebarActive, (newVal) => {
 const containerClass = computed(() => {
     const classes = {
         // Base layout modes
-        'layout-static': layoutConfig.menuMode === 'static',
-        'layout-overlay': layoutConfig.menuMode === 'overlay',
-        'layout-slim': layoutConfig.menuMode === 'slim',
-        'layout-compact': layoutConfig.menuMode === 'compact',
-        'layout-reveal': layoutConfig.menuMode === 'reveal',
-        'layout-drawer': layoutConfig.menuMode === 'drawer',
-        'layout-horizontal': layoutConfig.menuMode === 'horizontal',
-        
+        'layout-static': layoutStore.layoutConfig.menuMode === 'static',
+        'layout-overlay': layoutStore.layoutConfig.menuMode === 'overlay',
+        'layout-slim': layoutStore.layoutConfig.menuMode === 'slim',
+        'layout-compact': layoutStore.layoutConfig.menuMode === 'compact',
+        'layout-reveal': layoutStore.layoutConfig.menuMode === 'reveal',
+        'layout-drawer': layoutStore.layoutConfig.menuMode === 'drawer',
+        'layout-horizontal': layoutStore.layoutConfig.menuMode === 'horizontal',
+
         // Active states
-        'layout-static-inactive': layoutState.staticMenuDesktopInactive && layoutConfig.menuMode === 'static',
-        'layout-overlay-active': layoutState.overlayMenuActive,
-        'layout-mobile-active': layoutState.staticMenuMobileActive,
-        'layout-sidebar-active': layoutState.sidebarActive
+        'layout-static-inactive': layoutStore.layoutState.staticMenuDesktopInactive && layoutStore.layoutConfig.menuMode === 'static',
+        'layout-overlay-active': layoutStore.layoutState.overlayMenuActive,
+        'layout-mobile-active': layoutStore.layoutState.staticMenuMobileActive,
+        'layout-sidebar-active': layoutStore.layoutState.sidebarActive
     };
-    
-    console.log('Current menu mode:', layoutConfig.menuMode);
+
+    console.log('Current menu mode:', layoutStore.layoutConfig.menuMode);
     console.log('Container classes:', classes);
-    
+
     return classes;
 });
 
@@ -58,9 +58,9 @@ function bindOutsideClickListener() {
     if (!outsideClickListener.value) {
         outsideClickListener.value = (event) => {
             if (isOutsideClicked(event)) {
-                layoutState.overlayMenuActive = false;
-                layoutState.staticMenuMobileActive = false;
-                layoutState.menuHoverActive = false;
+                layoutStore.layoutState.overlayMenuActive = false;
+                layoutStore.layoutState.staticMenuMobileActive = false;
+                layoutStore.layoutState.menuHoverActive = false;
             }
         };
         document.addEventListener('click', outsideClickListener.value);
@@ -83,21 +83,21 @@ function isOutsideClicked(event) {
 </script>
 
 <template>
-    <div class="layout-wrapper" :class="[containerClass, `layout-card-${layoutConfig.cardStyle}`]">
+    <div class="layout-wrapper" :class="[containerClass, `layout-card-${layoutStore.layoutConfig.cardStyle}`]">
         <app-topbar></app-topbar>
-        
+
         <!-- Horizontal Menu (when horizontal mode) -->
-        <div v-if="layoutConfig.menuMode === 'horizontal'" class="layout-horizontal-menu">
+        <div v-if="layoutStore.layoutConfig.menuMode === 'horizontal'" class="layout-horizontal-menu">
             <app-menu></app-menu>
         </div>
-        
+
         <!-- Sidebar Menu (for all other modes) -->
         <app-sidebar v-else></app-sidebar>
-        
+
         <!-- Drawer Menu (when drawer mode) -->
-        <Drawer 
-            v-if="layoutConfig.menuMode === 'drawer'"
-            v-model:visible="layoutState.sidebarActive"
+        <Drawer
+            v-if="layoutStore.layoutConfig.menuMode === 'drawer'"
+            v-model:visible="layoutStore.layoutState.sidebarActive"
             position="left"
             class="layout-drawer-menu"
             :style="{ width: '20rem' }"

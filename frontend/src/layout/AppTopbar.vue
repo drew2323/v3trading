@@ -1,10 +1,10 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
+import { useLayoutStore } from '@/stores/layoutStore';
 import { useAuthStore } from '@/stores/authStore';
 import AppSettings from './AppSettings.vue';
 import { ref, computed } from 'vue';
 
-const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
 
 const settingsRef = ref(null);
@@ -30,7 +30,7 @@ function handleLogin() {
 <template>
     <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
-            <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
+            <button class="layout-menu-button layout-topbar-action" @click="layoutStore.toggleMenu">
                 <i class="pi pi-bars"></i>
             </button>
             <router-link to="/" class="layout-topbar-logo">

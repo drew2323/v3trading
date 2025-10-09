@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router/index.js'
 
@@ -10,10 +11,19 @@ import ToastService from 'primevue/toastservice'
 import StyleClass from 'primevue/styleclass'
 
 import '@/assets/styles.scss'
+import { useLayoutStore } from '@/stores/layoutStore'
 
 const app = createApp(App)
 
-app.use(createPinia())
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
+
+app.use(pinia)
+
+// Initialize dark mode class on app load
+const layoutStore = useLayoutStore()
+layoutStore.applyDarkModeClass()
+
 app.use(router)
 app.use(PrimeVue, {
     theme: {

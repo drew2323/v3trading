@@ -7,24 +7,105 @@
 - **Icons**: PrimeIcons
 - **Theming**: PrimeVue Themes (@primevue/themes)
 - **Auto-Import**: Components auto-imported via unplugin-vue-components
+- **State Management**: Pinia stores for centralized state
+
+### State Management
+
+#### Layout Store (`stores/layoutStore.ts`)
+Centralized Pinia store managing all layout state and user preferences with automatic persistence:
+
+**Layout Configuration (Persisted to localStorage)**:
+```typescript
+layoutConfig: {
+  preset: string           // Theme preset: 'Aura', 'Lara', 'Nora'
+  primary: string          // Primary color: 'emerald', 'blue', etc.
+  surface: string | null   // Surface palette: 'slate', 'zinc', etc.
+  darkTheme: boolean       // Dark mode enabled (single source of truth)
+  menuMode: string         // Menu mode: 'static', 'overlay', 'drawer', 'reveal', 'slim', 'compact', 'horizontal'
+  menuTheme: string        // Menu theme: 'dark', 'primary'
+  cardStyle: string        // Card style: 'filled', 'transparent'
+}
+```
+
+**Layout State (Runtime only - not persisted)**:
+```typescript
+layoutState: {
+  staticMenuDesktopInactive: boolean
+  overlayMenuActive: boolean
+  profileSidebarVisible: boolean
+  configSidebarVisible: boolean
+  staticMenuMobileActive: boolean
+  menuHoverActive: boolean
+  activeMenuItem: string | null
+  sidebarActive: boolean
+}
+```
+
+**Store Actions**:
+- `toggleMenu()` - Toggle menu based on current mode
+- `toggleDarkMode()` - Toggle dark theme with View Transitions API support
+- `setActiveMenuItem(item)` - Set active menu item
+- `applyDarkModeClass()` - Apply/remove `.app-dark` class on document
+- `updatePreset(preset)` - Update theme preset
+- `updatePrimary(color)` - Update primary color
+- `updateSurface(surface)` - Update surface palette
+- `updateDarkTheme(isDark)` - Update dark theme (toggles if different)
+- `updateCardStyle(style)` - Update card style
+- `updateMenuTheme(theme)` - Update menu theme
+- `updateMenuMode(mode)` - Update menu mode (resets active states)
+
+**Computed Properties**:
+- `isDarkTheme` - Returns `layoutConfig.darkTheme`
+- `isSidebarActive` - Returns if overlay or mobile menu is active
+- `getPrimary` - Returns current primary color
+- `getSurface` - Returns current surface palette
+- `colorSchemeDisplay` - Returns 'Dark' or 'Light' for UI display
+
+**Usage Example**:
+```typescript
+import { useLayoutStore } from '@/stores/layoutStore'
+
+const layoutStore = useLayoutStore()
+
+// Read state (reactive)
+layoutStore.layoutConfig.darkTheme
+layoutStore.isDarkTheme
+layoutStore.layoutConfig.menuMode
+
+// Update state (auto-persists and updates everywhere)
+layoutStore.toggleDarkMode()
+layoutStore.updateMenuMode('overlay')
+layoutStore.updatePrimary('emerald')
+```
+
+**Key Features**:
+- ✅ Automatic localStorage persistence via `pinia-plugin-persistedstate`
+- ✅ Bidirectional reactivity - changes anywhere reflect everywhere
+- ✅ Type-safe with TypeScript interfaces
+- ✅ Centralized single source of truth
+- ✅ Consistent with other stores (authStore, tradingStore)
 
 ### Theme Configuration
 
 #### AppSettings Component
 - Located in `layout/AppSettings.vue`
-- Manages user preferences
-- Stored in localStorage
+- Full settings drawer with all theme options
+- Uses computed refs for bidirectional binding to layoutStore
 - Configurable options:
-  - Color scheme (light/dark)
-  - Menu mode
-  - Input style
-  - Ripple effect
+  - Primary color palette (18 colors)
+  - Surface palette (9 palettes)
+  - Theme presets (Aura, Lara, Nora)
+  - Color scheme (Light/Dark)
+  - Card style (Filled/Transparent)
+  - Menu theme (Dark/Primary)
+  - Menu type (7 modes)
 
 #### AppConfigurator Component
 - Located in `layout/AppConfigurator.vue`
-- Dynamic theme configuration panel
-- Real-time preview
-- Theme customization options
+- Compact theme configuration dropdown
+- Subset of AppSettings options
+- Real-time theme preview
+- Uses computed refs for bidirectional binding
 
 ## Layout System
 
@@ -190,19 +271,35 @@ These services provide mock data for UI kit demonstrations and can be removed in
 2. Follow PrimeVue component patterns
 3. Leverage auto-import for PrimeVue components
 4. Use TypeScript for type safety
-5. Store user preferences in AppSettings
+5. Use Pinia stores for state management
+
+### State Management
+1. Import layoutStore for layout/theme access: `const layoutStore = useLayoutStore()`
+2. Access state reactively: `layoutStore.layoutConfig.darkTheme`
+3. Use computed properties for derived state: `layoutStore.isDarkTheme`
+4. Update state via actions: `layoutStore.updateMenuMode('overlay')`
+5. For theme-reactive components, watch store properties:
+   ```typescript
+   watch(() => layoutStore.isDarkTheme, () => {
+     // Update component when theme changes
+   })
+   ```
 
 ### Theming
-1. Use AppConfigurator for theme testing
-2. Follow PrimeVue theming guidelines
-3. Maintain consistent color palette
-4. Test light/dark mode compatibility
+1. Use layoutStore for theme state management
+2. Use AppSettings for user-facing theme configuration
+3. Use AppConfigurator for quick theme adjustments
+4. Follow PrimeVue theming guidelines
+5. Maintain consistent color palette
+6. Test light/dark mode compatibility
+7. Use PrimeVue CSS variables for custom styling
 
 ### Responsive Design
 1. Use PrimeVue responsive utilities
 2. Test on multiple breakpoints
 3. Mobile-first approach
 4. Collapsible sidebar for mobile
+5. Layout adapts automatically based on `layoutStore.layoutConfig.menuMode`
 
 ## Future Enhancements
 

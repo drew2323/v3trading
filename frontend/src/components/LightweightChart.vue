@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch, nextTick, shallowRef, computed } from 'vue'
-import { useLayout } from '@/layout/composables/layout'
+import { useLayoutStore } from '@/stores/layoutStore'
 import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import {
@@ -23,7 +23,7 @@ import {
   BaselineSeries,
 } from 'lightweight-charts'
 
-const { isDarkTheme } = useLayout()
+const layoutStore = useLayoutStore()
 
 export interface ChartMarker {
   time: number
@@ -112,7 +112,7 @@ const emit = defineEmits<{
 }>()
 
 const defaultChartOptions = computed(() => {
-  const dark = isDarkTheme.value
+  const dark = layoutStore.isDarkTheme
   return {
     layout: {
       background: { color: dark ? '#1e293b' : '#ffffff' },
@@ -270,7 +270,7 @@ watch(() => [props.width, props.height], ([newWidth, newHeight]) => {
 })
 
 // Watch for dark mode changes and update chart appearance
-watch(() => isDarkTheme.value, () => {
+watch(() => layoutStore.isDarkTheme, () => {
   if (chart.value) {
     chart.value.applyOptions(defaultChartOptions.value)
   }
