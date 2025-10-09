@@ -8,7 +8,7 @@
     overflow-y: auto;
     user-select: none;
     top: 6rem;
-    left: 1rem;
+    left: 0rem;
     transition:
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
@@ -276,72 +276,99 @@
 // Reveal Mode - Hover to reveal
 .layout-reveal {
     .layout-sidebar {
-        width: 4rem;
-        transition: width 0.3s ease;
-        
+        width: 5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+        transition: width 0.4s cubic-bezier(0.6, 0.43, 0, 0.97);
+
         &:hover {
-            width: 20rem;
+            width: 16rem;
         }
-        
+
         .layout-menu {
             ul {
                 a {
-                    justify-content: center;
-                    overflow: hidden;
-                    
-                    .layout-menuitem-text,
-                    .layout-submenu-toggler {
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-                        white-space: nowrap;
-                    }
-                    
+                    justify-content: flex-start;
+                    align-items: center;
+                    padding-left: 0;
+                    padding-right: 0;
+                    min-height: 2.5rem;
+                    transition: padding 0.4s cubic-bezier(0.6, 0.43, 0, 0.97);
+
                     .layout-menuitem-icon {
                         margin-right: 0;
-                        transition: margin-right 0.3s ease;
+                        margin-left: 1.125rem;
+                        transition: margin 0.4s cubic-bezier(0.6, 0.43, 0, 0.97);
+                        opacity: 1;
+                        visibility: visible;
+                        flex-shrink: 0;
+                    }
+
+                    .layout-menuitem-text {
+                        opacity: 0;
+                        visibility: hidden;
+                        white-space: nowrap;
+                        transition:
+                            opacity 0.4s cubic-bezier(0.6, 0.43, 0, 0.97) 0.05s,
+                            visibility 0.4s cubic-bezier(0.6, 0.43, 0, 0.97) 0.05s;
+                        margin-left: 0.5rem;
+                        flex: 1;
+                    }
+
+                    .layout-submenu-toggler {
+                        opacity: 0;
+                        visibility: hidden;
+                        white-space: nowrap;
+                        transition:
+                            opacity 0.4s cubic-bezier(0.6, 0.43, 0, 0.97) 0.05s,
+                            visibility 0.4s cubic-bezier(0.6, 0.43, 0, 0.97) 0.05s;
+                        margin-left: auto;
+                        margin-right: 0.5rem;
+                        flex-shrink: 0;
                     }
                 }
             }
         }
-        
+
         &:hover {
             .layout-menu {
                 ul {
                     a {
-                        justify-content: flex-start;
-                        
-                        .layout-menuitem-text,
+                        padding-left: 1rem;
+                        padding-right: 1rem;
+
+                        .layout-menuitem-icon {
+                            margin-left: 0;
+                            margin-right: 0.5rem;
+                        }
+
+                        .layout-menuitem-text {
+                            opacity: 1;
+                            visibility: visible;
+                        }
+
                         .layout-submenu-toggler {
                             opacity: 1;
-                        }
-                        
-                        .layout-menuitem-icon {
-                            margin-right: 0.5rem;
+                            visibility: visible;
                         }
                     }
                 }
             }
         }
-        
+
         .layout-root-menuitem {
             > .layout-menuitem-root-text {
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-        }
-        
-        &:hover {
-            .layout-root-menuitem {
-                > .layout-menuitem-root-text {
-                    opacity: 1;
-                }
+                opacity: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     }
-    
+
     .layout-main-container {
         margin-left: 4rem;
-        transition: margin-left 0.3s ease;
+        transition: margin-left 0.4s cubic-bezier(0.6, 0.43, 0, 0.97);
     }
 }
 
@@ -429,17 +456,53 @@
     .layout-compact,
     .layout-reveal {
         .layout-sidebar {
-            width: 20rem;
+            width: 16rem;
             transform: translateX(-100%);
         }
-        
+
         .layout-main-container {
             margin-left: 0;
         }
-        
+
         &.layout-mobile-active {
             .layout-sidebar {
                 transform: translateX(0);
+            }
+        }
+    }
+
+    // Override reveal mode styles on mobile to show text always
+    .layout-reveal {
+        .layout-sidebar {
+            .layout-menu {
+                ul {
+                    a {
+                        padding-left: 1rem;
+                        padding-right: 1rem;
+
+                        .layout-menuitem-icon {
+                            margin-left: 0;
+                            margin-right: 0.5rem;
+                        }
+
+                        .layout-menuitem-text {
+                            opacity: 1;
+                            visibility: visible;
+                        }
+
+                        .layout-submenu-toggler {
+                            opacity: 1;
+                            visibility: visible;
+                        }
+                    }
+                }
+            }
+
+            .layout-root-menuitem {
+                > .layout-menuitem-root-text {
+                    opacity: 1;
+                    visibility: visible;
+                }
             }
         }
     }

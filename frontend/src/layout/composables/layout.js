@@ -94,7 +94,14 @@ export function useLayout() {
         } else if (layoutConfig.menuMode === 'drawer') {
             layoutState.sidebarActive = !layoutState.sidebarActive;
         } else if (layoutConfig.menuMode === 'reveal') {
-            layoutState.overlayMenuActive = !layoutState.overlayMenuActive;
+            // On mobile, reveal mode should behave like static mode
+            if (window.innerWidth <= 991) {
+                layoutState.staticMenuMobileActive = !layoutState.staticMenuMobileActive;
+            } else {
+                // On desktop, reveal mode uses hover, so toggle has minimal effect
+                layoutState.staticMenuDesktopInactive = !layoutState.staticMenuDesktopInactive;
+            }
+            return; // Exit early to avoid double-toggling
         }
 
         if (window.innerWidth > 991) {

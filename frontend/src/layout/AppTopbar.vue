@@ -87,7 +87,7 @@ function handleLogin() {
                             class="layout-topbar-action"
                         >
                             <template v-if="isAuthenticated">
-                                <img v-if="user?.picture" :src="user.picture" :alt="user.name" class="w-8 h-8 rounded-full" />
+                                <img v-if="user?.picture" :src="user.picture" :alt="user.name" class="w-9 h-9 rounded-xl" />
                                 <i v-else class="pi pi-user"></i>
                                 <span>{{ user?.name || 'Profile' }}</span>
                             </template>
