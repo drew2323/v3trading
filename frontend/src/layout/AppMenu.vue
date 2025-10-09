@@ -1,7 +1,61 @@
 <script setup>
-import { ref } from 'vue';
-
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useLayoutStore } from '@/stores/layoutStore';
+import Button from 'primevue/button';
 import AppMenuItem from './AppMenuItem.vue';
+
+const layoutStore = useLayoutStore();
+const isHovered = ref(false);
+
+// Computed properties for pin functionality
+const menuMode = computed(() => layoutStore.layoutConfig.menuMode);
+const isPinnable = computed(() => menuMode.value === 'reveal' || menuMode.value === 'static');
+const isPinned = computed(() => menuMode.value === 'static');
+const showPin = computed(() => {
+    // Show pin only on desktop and when menu is pinnable
+    if (!isPinnable.value) return false;
+    // In static mode, always show
+    if (isPinned.value) return true;
+    // In reveal mode, only show when hovered
+    return isHovered.value;
+});
+
+// Toggle between reveal and static modes
+const togglePin = () => {
+    if (menuMode.value === 'reveal') {
+        layoutStore.updateMenuMode('static');
+    } else if (menuMode.value === 'static') {
+        layoutStore.updateMenuMode('reveal');
+    }
+};
+
+// Track sidebar hover state
+let sidebarElement = null;
+
+const handleMouseEnter = () => {
+    isHovered.value = true;
+};
+
+const handleMouseLeave = () => {
+    isHovered.value = false;
+};
+
+onMounted(() => {
+    // Find the sidebar element and attach hover listeners
+    sidebarElement = document.querySelector('.layout-sidebar');
+    if (sidebarElement) {
+        sidebarElement.addEventListener('mouseenter', handleMouseEnter);
+        sidebarElement.addEventListener('mouseleave', handleMouseLeave);
+    }
+});
+
+onUnmounted(() => {
+    // Clean up event listeners
+    if (sidebarElement) {
+        sidebarElement.removeEventListener('mouseenter', handleMouseEnter);
+        sidebarElement.removeEventListener('mouseleave', handleMouseLeave);
+    }
+});
 
 const model = ref([
     {
@@ -153,12 +207,73 @@ const model = ref([
 </script>
 
 <template>
-    <ul class="layout-menu">
-        <template v-for="(item, i) in model" :key="item">
-            <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
-            <li v-if="item.separator" class="menu-separator"></li>
-        </template>
-    </ul>
+    <div class="menu-container">
+        <!-- Pin Button - Desktop only, shown when expanded -->
+        <div v-if="showPin" class="menu-pin-wrapper hidden lg:flex">
+            <Button
+                :icon="isPinned ? 'pi pi-thumbtack' : 'pi pi-thumbtack'"
+                @click="togglePin"
+                text
+                rounded
+                size="small"
+                :class="{ 'pin-active': isPinned }"
+                :title="isPinned ? 'Unpin menu (switch to Reveal)' : 'Pin menu (switch to Static)'"
+                severity="secondary"
+            />
+        </div>
+
+        <ul class="layout-menu">
+            <template v-for="(item, i) in model" :key="item">
+                <app-menu-item v-if="!item.separator" :item="item" :index="i"></app-menu-item>
+                <li v-if="item.separator" class="menu-separator"></li>
+            </template>
+        </ul>
+    </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.menu-container {
+    position: relative;
+}
+
+.menu-pin-wrapper {
+    position: absolute;
+    top: -0.55rem;
+    right: 0;
+    z-index: 10;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in forwards;
+    animation-delay: 0.1s;
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    :deep(.p-button) {
+        transition: all 0.2s ease;
+        color: var(--text-color);
+
+        &:hover {
+            background-color: var(--surface-hover);
+            color: var(--primary-color);
+        }
+
+        &.pin-active {
+            color: var(--primary-color);
+
+            .pi-thumbtack {
+                transform: rotate(45deg);
+            }
+        }
+
+        .pi-thumbtack {
+            transition: transform 0.2s ease;
+        }
+    }
+}
+</style>

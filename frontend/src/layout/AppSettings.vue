@@ -198,11 +198,6 @@ function onPresetChange(event) {
     $t().preset(presetValue).preset(getPresetExt()).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
 }
 
-function onColorSchemeChange(event) {
-    const scheme = event.value;
-    layoutStore.updateDarkTheme(scheme === 'Dark');
-}
-
 function onCardStyleChange(event) {
     const style = event.value;
     layoutStore.updateCardStyle(style);
@@ -293,11 +288,10 @@ defineExpose({
             <div>
                 <div class="flex flex-col gap-2">
                     <span class="text-lg text-muted-color font-semibold">Color Scheme</span>
-                    <SelectButton 
-                        v-model="colorScheme" 
-                        @change="onColorSchemeChange"
-                        :options="colorSchemeOptions" 
-                        :allowEmpty="false" 
+                    <SelectButton
+                        v-model="colorScheme"
+                        :options="colorSchemeOptions"
+                        :allowEmpty="false"
                     />
                 </div>
             </div>
