@@ -3,6 +3,7 @@ import { ref, onMounted, shallowRef, type Ref } from 'vue'
 import LightweightChart from '@/components/LightweightChart.vue'
 import type { ChartSeries, ChartPane, ChartMarker } from '@/components/LightweightChart.vue'
 import MarkerModal from '@/components/MarkerModal.vue'
+import Plotly3DChart from '@/components/Plotly3DChart.vue'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 
@@ -402,6 +403,19 @@ onMounted(() => {
           @pane-removed="handlePaneRemoved"
           @series-moved="handleSeriesMoved"
           @show-marker-modal="(seriesId, seriesName, seriesData) => showMarkerModal(seriesId, seriesName, seriesData, volumeChart)"
+        />
+      </div>
+    </div>
+
+    <!-- 3D Visualization with Plotly -->
+    <div class="col-span-12">
+      <div class="card">
+        <div class="flex justify-between items-center font-semibold text-xl mb-4">
+          <span>3D Visualization Demo</span>
+        </div>
+        <Plotly3DChart
+          :height="500"
+          title="3D Surface & Scatter Plot"
         />
       </div>
     </div>
